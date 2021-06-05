@@ -1,3 +1,6 @@
+build/
+logs/
+extern/
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,vs,visualstudio,visualstudiocode,cmake,ninja
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,vs,visualstudio,visualstudiocode,cmake,ninja
