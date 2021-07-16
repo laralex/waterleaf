@@ -1,13 +1,11 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15.1 FATAL_ERROR)
 project(waterleaf)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WLF_BUILD_TESTS "Build the unit tests" ON)
-set(WLF_VERBOSITY_LEVEL "100" CACHE STRING
-    "Messages with not lower level will be logged/printed \
-    ('0' no log, '1' critical, '2' +interdictory errors, '3' +warnings, etc)" FORCE)
+option(WLF_FAST_COMPILE "Build without slow flags (like warnings)" ON)
 
 set(WLF_ASSERTION_LEVEL "100" CACHE STRING
     "Assertions with not lower level will be checked and required to pass \
@@ -16,23 +14,33 @@ set(WLF_ASSERTION_LEVEL "100" CACHE STRING
 # ==== end of config ====
 
 # build setup
-add_definitions(
-    -DWLF_VERBOSITY_LEVEL=${WLF_VERBOSITY_LEVEL}
-    -DWLF_ASSERTION_LEVEL=${WLF_ASSERTION_LEVEL})
-
-if(!CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Cached CMake build type")
-elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_definitions(-DWLF_DEBUG)
-    set(CMAKE_DEBUG_POSTFIX "_debug" CACHE STRING "")
+if(NOT WLF_FAST_COMPILE)
+    set(WLF_BASE_WARNING_FLAGS   -Wall -Wshadow -Werror -Wconversion)
+    set(WLF_STRICT_WARNING_FLAGS -W    -Wpointer-arith  -Wreturn-type
+        -Wcast-qual  -Wwrite-strings   -Wswitch -Wunused-parameter
+        -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls)
+    set(WLF_DEBUG_FLAGS -DWLF_DEBUG)
+    set(WLF_OPTIMIZING_FLAGS -O2)
 endif()
 
-set(WLF_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
+add_compile_options(${WLF_BASE_WARNING_FLAGS} ${WLF_STRICT_WARNING_FLAGS})
+
+if(!CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "")
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(${WLF_DEBUG_FLAGS})
+    set(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "")
+elseif(CMAKE_BUILD_TYPE MATCHES "^(Release|RelWithDebInfo|MinSizeRel)$")
+    add_compile_options(${WLF_OPTIMIZING_FLAGS})
+endif()
+
+set(WLF_BINARY_DIR    "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(WLF_ARTIFACTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/artifacts")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${WLF_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${WLF_ARTIFACTS_DIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${WLF_ARTIFACTS_DIR}")
-set(CMAKE_FILES_DIRECTORY "/.cmake")
+set(CMAKE_PDB_OUTPUT_DIRECTORY     "${WLF_ARTIFACTS_DIR}")
 
 # external libraries
 set(EXTERN_ARTIFACTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/artifacts_extern")
