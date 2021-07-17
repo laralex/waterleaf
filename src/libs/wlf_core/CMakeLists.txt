@@ -6,9 +6,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
 make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
-    "${WLF_STRICT_WARNING_FLAGS}" # flags
-    ""                            # link against
-    Assertions.cpp)
+  "${WLF_STRICT_WARNING_FLAGS}" # flags
+  ""                            # link against
+  Assertions.cpp)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    -DWLF_ASSERTION_LEVEL=${WLF_ASSERTION_LEVEL})
+  -DWLF_ASSERTION_LEVEL=${WLF_ASSERTION_LEVEL})

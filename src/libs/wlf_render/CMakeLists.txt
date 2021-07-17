@@ -6,6 +6,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
 make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
-    "${WLF_BASE_WARNING_FLAGS}"   # flags
-    "wlf_core glm"                # link against
-    Dummy.cpp)
+  "${WLF_BASE_WARNING_FLAGS}"   # flags
+  "wlf_core glm"                # link against
+  Dummy.cpp)

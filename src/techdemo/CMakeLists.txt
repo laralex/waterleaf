@@ -6,6 +6,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
 make_executable(${PROJECT_NAME}
-    "${WLF_STRICT_WARNING_FLAGS}" # flags
-    "wlf_render"                  # link against
-    Main.cpp)
+  "${WLF_STRICT_WARNING_FLAGS}" # flags
+  "wlf_render"                  # link against
+  Main.cpp)
