@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15.1 FATAL_ERROR)
-project(waterleaf_tests)
+project(wlf_unit_tests)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -8,28 +8,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # NOTE: GoogleTest is not a git submodule, in order to prevent downloading of it
 # when building without tests enabled
+
+# prevent overriding compiler/linker settings (on Windows)
+include(GoogleTest)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 include(FetchContent)
-set(FETCHCONTENT_QUIET off)
 set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}/download")
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG        e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
 )
-
-# prevent overriding compiler/linker settings (on Windows)
-include(GoogleTest)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-FetchContent_GetProperties(googletest)
-if(NOT googletest_POPULATED)
-    FetchContent_Populate(googletest)
-    add_subdirectory("${googletest_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/download/googletest-build")
-endif()
+FetchContent_MakeAvailable(googletest)
 
 set(GTEST_TARGETS gtest gtest_main gmock gmock_main)
+
 set_target_properties(${GTEST_TARGETS} PROPERTIES
         CMAKE_INSTALL_LIBDIR "${CMAKE_CURRENT_BINARY_DIR}/libs"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libs"
@@ -46,14 +41,12 @@ mark_as_advanced(
 )
 
 # ==== tests ====
-macro(assemble_test TESTNAME FILES)
-    add_executable(${TESTNAME} "${FILES}")
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER wlf_tests)
-    target_link_libraries(${TESTNAME} ${GTEST_TARGETS} ${ARGN})
-    gtest_discover_tests(${TESTNAME}
-        SOURCES "${FILES}"
-        WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-    )
-endmacro()
 
-assemble_test(wlf_unit_tests "DummyTest.cpp" wlf_render)
+include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
+function(make_test name link_against)
+  make_executable(${name} "${WLF_BASE_WARNING_FLAGS}" "${link_against} ${GTEST_TARGETS}" ${ARGN})
+  gtest_discover_tests(${name} SOURCES ${ARGN}
+      WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endfunction()
+
+make_test(wlf_unit_tests "wlf_render" DummyTest.cpp)
