@@ -6,7 +6,6 @@ function(extended_target_link_libraries name link_against)
 endfunction()
 
 function(wlf_target_properties name folder cxx_flags)
-	string (REPLACE " " ";" cxx_flags "${cxx_flags}")
 	set_target_properties(${name} PROPERTIES
 		FOLDER ${folder}
 		COMPILE_FLAGS "${cxx_flags}"

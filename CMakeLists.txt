@@ -15,13 +15,14 @@ set(WLF_ASSERTION_LEVEL "100" CACHE STRING
 # ==== end of config ====
 
 # build setup
-set(WLF_BASE_WARNING_FLAGS -Wall -Wshadow -Werror -Wconversion CACHE STRING "")
-set(WLF_DEBUG_FLAGS -DWLF_DEBUG)
+set(WLF_BASE_WARNING_FLAGS "-Wall -Wshadow -Werror -Wconversion" CACHE STRING "")
+set(WLF_DEBUG_FLAGS "-DWLF_DEBUG")
 if(NOT WLF_FAST_COMPILE)
-set(WLF_STRICT_WARNING_FLAGS -W  -Wpointer-arith  -Wreturn-type
-   -Wcast-qual  -Wwrite-strings   -Wswitch -Wunused-parameter
-   -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls CACHE STRING "")
-set(WLF_OPTIMIZING_FLAGS -O2)
+set(WLF_STRICT_WARNING_FLAGS
+   "-W          -Wpointer-arith    -Wreturn-type      -Winline\
+   -Wcast-qual  -Wwrite-strings    -Wswitch           -Wunused-parameter \
+   -Wcast-align -Wchar-subscripts  -Wredundant-decls" CACHE STRING "")
+set(WLF_OPTIMIZING_FLAGS "-O2")
 endif()
 
 if(!CMAKE_BUILD_TYPE)
