@@ -12,9 +12,10 @@ constexpr bool operator&(AssertionLevel lhs, AssertionLevel rhs) {
    return static_cast<ptrdiff_t>(lhs) & static_cast<ptrdiff_t>(rhs);
 }
 
-}   // namespace
+} // namespace
 
 /* Assertion utilities */
+
 void wlf::Assert(bool isOk, std::string_view message) {
    constexpr bool chosen = (EnabledAssertions & AssertionLevel::RunTime);
    if constexpr(!wlf::NoAsserts && chosen) {

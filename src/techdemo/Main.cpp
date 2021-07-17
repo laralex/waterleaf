@@ -3,7 +3,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/ext/matrix_clip_space.hpp>   // glm::perspective
+#include <glm/ext/matrix_clip_space.hpp> // glm::perspective
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/mat4x4.hpp>
 #include <imgui.h>

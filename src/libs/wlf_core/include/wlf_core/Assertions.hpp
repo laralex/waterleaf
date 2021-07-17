@@ -38,23 +38,23 @@ inline constexpr AssertionLevel EnabledAssertions =
 #if WLF_ASSERTION_LEVEL >= 3
    | AssertionLevel::DebugRunTime
 #endif
-   ;   //  EnabledAssertions
-}   // namespace
+   ; // EnabledAssertions
+} // namespace
 
 /* wlf::NoAsserts
-   Indicates if the library was configured to skip compilation of assertions
-   NOTE: use it to suppress `static_assert` like so
-   `static_assert(ok || wlf::NoAsserts)` */
+ * Indicates if the library was configured to skip compilation of assertions
+ * NOTE: use it to suppress `static_assert` like so
+ * `static_assert(ok || wlf::NoAsserts)` */
 inline constexpr bool NoAsserts = EnabledAssertions == AssertionLevel::None;
 
 /* wlf::Assert
-   If library is configured to check runtime assertions, this assertion
-   will be compiled in any build type (Debug/Release) */
+ * If library is configured to check runtime assertions, this assertion
+ * will be compiled in any build type (Debug/Release) */
 ENGINE_API void Assert(bool isOk, std::string_view message);
 
 /* wlf::Assert
-   If library is configured to check debug runtime assertions, this assertion
-   will be compiled in Debug build type, and will be a noop in Release */
+ * If library is configured to check debug runtime assertions, this assertion
+ * will be compiled in Debug build type, and will be a noop in Release */
 ENGINE_API void AssertDebug(bool isOk, std::string_view message);
 
-}   // namespace wlf
+} // namespace wlf
