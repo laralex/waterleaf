@@ -18,11 +18,10 @@ set(WLF_ASSERTION_LEVEL "100" CACHE STRING
 set(WLF_BASE_WARNING_FLAGS "-Wall -Wshadow -Werror -Wconversion" CACHE STRING "")
 set(WLF_DEBUG_FLAGS "-DWLF_DEBUG")
 if(NOT WLF_FAST_COMPILE)
-set(WLF_STRICT_WARNING_FLAGS
-   "-W          -Wpointer-arith    -Wreturn-type      -Winline\
-   -Wcast-qual  -Wwrite-strings    -Wswitch           -Wunused-parameter \
-   -Wcast-align -Wchar-subscripts  -Wredundant-decls" CACHE STRING "")
-set(WLF_OPTIMIZING_FLAGS "-O2")
+   set(WLF_STRICT_WARNING_FLAGS "-W -Wswitch -Winline -Wreturn-type \
+      -Wwrite-strings   -Wpointer-arith -Wunused-parameter -Wcast-qual \
+      -Wchar-subscripts -Wcast-align    -Wredundant-decls" CACHE STRING "")
+   set(WLF_OPTIMIZING_FLAGS "-O2")
 endif()
 
 if(!CMAKE_BUILD_TYPE)
