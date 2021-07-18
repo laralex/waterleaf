@@ -8,7 +8,7 @@ using namespace wlf;
 
 namespace {
 
-constexpr bool operator&(AssertionLevel lhs, AssertionLevel rhs) {
+constexpr auto operator&(AssertionLevel lhs, AssertionLevel rhs) -> bool {
    return static_cast<ptrdiff_t>(lhs) & static_cast<ptrdiff_t>(rhs);
 }
 
