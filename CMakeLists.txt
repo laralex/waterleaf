@@ -15,7 +15,10 @@ set(WLF_ASSERTION_LEVEL "100" CACHE STRING
 # ==== end of config ====
 
 # linter setup
-# set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*;header-filter=.;-warnings-as-errors=*;-llvmlibc=*")
+# set(CMAKE_CXX_CLANG_TIDY clang-tidy;
+#    -checks=*,-llvmlibc-*;
+#    -header-filter=.*;-warnings-as-errors=*;
+#    -format-style=file;-file-ignore=extern;)
 
 # build setup
 set(WLF_BASE_WARNING_FLAGS "-Wall -Wshadow -Werror -Wconversion" CACHE STRING "")
