@@ -2,5 +2,6 @@
 
 /* Includes all library's interface headers */
 
-#include "Assertions.hpp"
+#include "Assertion.hpp"
 #include "Defines.hpp"
+#include "Benchmark.hpp"

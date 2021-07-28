@@ -46,7 +46,7 @@ inline constexpr AssertionLevel EnabledAssertions =
  * NOTE: use it to suppress `static_assert` like so
  * `static_assert(ok || wlf::NoAsserts)` */
 ENGINE_API
-inline constexpr bool NoAsserts = EnabledAssertions == AssertionLevel::None;
+inline constexpr bool NoAsserts = (EnabledAssertions == AssertionLevel::None);
 
 /* wlf::Assert
  * If library is configured to check runtime assertions, this assertion

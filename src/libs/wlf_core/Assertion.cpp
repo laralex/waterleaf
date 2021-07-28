@@ -1,4 +1,4 @@
-#include "Assertions.hpp"
+#include "Assertion.hpp"
 
 #include <assert.h>
 #include <iostream>
@@ -12,7 +12,7 @@ constexpr auto operator&(AssertionLevel lhs, AssertionLevel rhs) -> bool {
    return static_cast<ptrdiff_t>(lhs) & static_cast<ptrdiff_t>(rhs);
 }
 
-} // namespace
+}
 
 /* Assertion utilities */
 

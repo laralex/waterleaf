@@ -21,6 +21,8 @@ set(WLF_ASSERTION_LEVEL "100" CACHE STRING
 #    -format-style=file;-file-ignore=extern;)
 
 # build setup
+add_compile_definitions(WLF_ASSERTION_LEVEL=${WLF_ASSERTION_LEVEL})
+
 set(WLF_BASE_WARNING_FLAGS "-Wall -Wshadow -Werror -Wconversion" CACHE STRING "")
 set(WLF_DEBUG_FLAGS "-DWLF_DEBUG")
 if(NOT WLF_FAST_COMPILE)
