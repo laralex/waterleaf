@@ -7,5 +7,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
 make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
    "${WLF_STRICT_WARNING_FLAGS}" # flags
-   ""                            # link against
+   "glm"                            # link against
    Assertion.cpp)
