@@ -1,5 +1,5 @@
 #define GLFW_INCLUDE_NONE
-#include "engine/WaterleafEngine.h"
+#include "wlf_core/Prelude.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

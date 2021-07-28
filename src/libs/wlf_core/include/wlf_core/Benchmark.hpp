@@ -31,10 +31,10 @@ MeasureRunNanoseconds(F&& function, Args&&... args) {
    return MeasureRun<std::chrono::nanoseconds>(function, args...);
 }
 
-class Stopwatch {
+class MilliseconStopwatch {
 public:
    void Reset();
-   float SmoothedElapsed();
+   f32 SmoothedElapsed();
    std::int64_t LastElapsed();
 
 private:

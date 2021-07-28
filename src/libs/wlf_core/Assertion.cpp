@@ -1,5 +1,7 @@
 #include "Assertion.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <assert.h>
 #include <iostream>
 #include <string_view>
@@ -20,7 +22,7 @@ void wlf::Assert(bool isOk, std::string_view message) {
    constexpr bool chosen = (EnabledAssertions & AssertionLevel::RunTime);
    if constexpr(!wlf::NoAsserts && chosen) {
       if(!isOk) {
-         std::cout << message << '\n';
+         spdlog::error(message);
          // TODO(laralex): fancier termination (error window, etc)
          exit(1);
       }
@@ -31,7 +33,7 @@ void wlf::AssertDebug(bool isOk, std::string_view message) {
    constexpr bool chosen = (EnabledAssertions & AssertionLevel::DebugRunTime);
    if constexpr(!wlf::NoAsserts && wlf::IsDebugBuild && chosen) {
       if(!isOk) {
-         std::cout << message << '\n';
+         spdlog::error(message);
          // TODO(laralex): fancier termination (error window, etc)
          exit(1);
       }

@@ -1,6 +1,5 @@
 build*/
 logs/
-extern/
 .vscode/
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,vs,visualstudio,visualstudiocode,cmake,ninja

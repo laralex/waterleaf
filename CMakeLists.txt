@@ -44,8 +44,8 @@ endif()
 set(WLF_BINARY_DIR    "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(WLF_ARTIFACTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/artifacts")
 
-# external libraries
-set(EXTERN_SUBDIRS glm)
+# external librariesn
+set(EXTERN_SUBDIRS glm spdlog)
 foreach(subdir ${EXTERN_SUBDIRS})
    add_subdirectory(
    "${CMAKE_CURRENT_SOURCE_DIR}/extern/${subdir}"
