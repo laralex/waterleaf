@@ -15,7 +15,7 @@ namespace {
 
 const f64 ACCEPTED_PROFILING_INCONSISTENCY_US = 5.0f;
 
-usize DummyWork(usize loopSize) {
+static usize DummyWork(usize loopSize) {
    usize dummyCount = 0;
    for(usize i = 0; i < loopSize; ++i) {
       ++dummyCount;
@@ -23,119 +23,117 @@ usize DummyWork(usize loopSize) {
    return dummyCount;
 };
 
+constexpr auto ProfileInMillisecs =
+   &utils::ProfileInMillisecs<decltype(DummyWork)&&, usize&&>;
+
+constexpr auto ProfileInMicrosecs =
+   &utils::ProfileInMicrosecs<decltype(DummyWork)&&, usize&&>;
+
 struct Statistics {
    f32 mean, std, median;
 };
 
-Statistics CalculateStatistics(std::vector<f32>&& sample) {
-   std::sort(sample.begin(), sample.end());
-   f32 sampleSize = static_cast<f32>(sample.size());
-
+Statistics CalculateStatistics(const std::vector<f32>& sortedSample) {
+   usize size = sortedSample.size();
    Statistics resultStats;
-   if(sample.size() % 2 == 0) {
+   if(size % 2 == 0) {
       resultStats.median =
-         (sample[sample.size() / 2] + sample[sample.size() / 2 - 1]) / 2;
+         (sortedSample[size / 2] + sortedSample[size / 2 - 1]) / 2;
    } else {
-      resultStats.median = sample[sample.size() / 2];
+      resultStats.median = sortedSample[size / 2];
    }
    resultStats.mean = std::transform_reduce(
-      sample.begin(), sample.end(), 0.0f, std::plus{},
-      [sampleSize](auto elem) { return elem / sampleSize; });
-   f32 sumMeanDiffs = std::transform_reduce(
-      sample.begin(), sample.end(), 0.0f, std::plus{}, [&](auto elem) {
-         auto diff = static_cast<f32>(elem) - resultStats.mean;
-         return diff * diff;
-      });
-   resultStats.std = std::sqrtf(sumMeanDiffs / (sampleSize - 1.0f));
+      sortedSample.begin(), sortedSample.end(), 0.0f, std::plus{},
+      [size](auto elem) { return elem / static_cast<f32>(size); });
+   f32 sumMeanDiffs =
+      std::transform_reduce(sortedSample.begin(), sortedSample.end(), 0.0f,
+                            std::plus{}, [&](auto elem) {
+                               auto diff =
+                                  static_cast<f32>(elem) - resultStats.mean;
+                               return diff * diff;
+                            });
+   resultStats.std = std::sqrtf(sumMeanDiffs / (static_cast<f32>(size) - 1.0f));
    return resultStats;
 }
 
+class ProfilingFunctionTest : public ::testing::Test {
+   std::vector<f32> mRunsTimings;
+
+protected:
+   void WarmUp(usize nWarmUps, usize workLoopSize) {
+      for(auto run = 0; run < nWarmUps; ++run) {
+         auto result = DummyWork(workLoopSize);
+         EXPECT_EQ(result, workLoopSize);
+      }
+   }
+
+   template<typename ProfilingF>
+   Statistics ProfileSameJobSize(usize nRuns,
+                                 usize workLoopSize,
+                                 ProfilingF profilingFunc) {
+      mRunsTimings.clear();
+      for(auto run = 0; run < nRuns; ++run) {
+         auto [result, timing] =
+            profilingFunc(DummyWork, std::forward<usize>(workLoopSize));
+         EXPECT_EQ(result, workLoopSize);
+         mRunsTimings.push_back(static_cast<f32>(timing));
+      }
+      return CalculateStatistics(mRunsTimings);
+   }
+
+   template<typename ProfilingF>
+   Statistics ProfileIncreasingJobSize(usize nRuns,
+                                       usize baseLoopSize,
+                                       ProfilingF profilingFunc) {
+      mRunsTimings.clear();
+      for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
+         auto [result, timing] =
+            profilingFunc(DummyWork, runIdx * baseLoopSize);
+         EXPECT_EQ(result, runIdx * baseLoopSize);
+         mRunsTimings.push_back(static_cast<f32>(timing / runIdx));
+      }
+      return CalculateStatistics(mRunsTimings);
+   }
+};
+
 } // namespace
 
-GTEST_TEST(CoreProfiling, ProfileSameFunction_OverheadConsistency) {
+TEST_F(ProfilingFunctionTest, WallTimeIndependentOverhead) {
    const usize nRuns = 1000, workLoopSize = 5000, nWarmUps = 250;
-
    {
-      std::vector<f32> runsTimeMs;
-
-      // warm up
-      for(auto run = 0; run < nWarmUps; ++run) {
-         auto [result, timeMs] =
-            utils::ProfileInMillisecs(DummyWork, workLoopSize);
-         EXPECT_EQ(result, workLoopSize);
-      }
-
-      for(auto run = 0; run < nRuns; ++run) {
-         auto [result, timeMs] =
-            utils::ProfileInMillisecs(DummyWork, workLoopSize);
-         EXPECT_EQ(result, workLoopSize);
-         runsTimeMs.push_back(static_cast<f32>(timeMs));
-      }
-      auto stats = CalculateStatistics(std::move(runsTimeMs));
+      WarmUp(nWarmUps, workLoopSize);
+      auto stats = ProfileSameJobSize(nRuns, workLoopSize, ProfileInMillisecs);
       EXPECT_LE(std::abs(stats.mean - stats.median),
                 0.001f * ACCEPTED_PROFILING_INCONSISTENCY_US);
    }
 
    {
-      std::vector<f32> runsTimeUs;
-
-      // warm up
-      for(auto run = 0; run < nWarmUps; ++run) {
-         auto [result, timeMs] =
-            utils::ProfileInMicrosecs(DummyWork, workLoopSize);
-         EXPECT_EQ(result, workLoopSize);
-      }
-
-      for(auto run = 0; run < nRuns; ++run) {
-         auto [result, timeUs] =
-            utils::ProfileInMicrosecs(DummyWork, workLoopSize);
-         EXPECT_EQ(result, workLoopSize);
-         runsTimeUs.push_back(static_cast<f32>(timeUs));
-      }
-      auto stats = CalculateStatistics(std::move(runsTimeUs));
+      WarmUp(nWarmUps, workLoopSize);
+      auto stats = ProfileSameJobSize(nRuns, workLoopSize, ProfileInMicrosecs);
       EXPECT_LE(std::abs(stats.mean - stats.median),
                 ACCEPTED_PROFILING_INCONSISTENCY_US);
    }
 }
 
-GTEST_TEST(CoreProfiling, ProfileDifferentFunctions_OverheadConsistency) {
-   const usize nRuns = 1000, baseLoopSize = 250, nWarmUps = 100;
+TEST_F(ProfilingFunctionTest, JobSizeIndependentOverhead) {
+   const usize nRuns = 500, baseLoopSize = 250;
 
-   // warm up
-   for(usize runIdx = 0; runIdx < nWarmUps; ++runIdx) {
-      auto [result, timeMs] =
-         utils::ProfileInMillisecs(DummyWork, runIdx * baseLoopSize);
-      EXPECT_EQ(result, runIdx * baseLoopSize);
+   {
+      WarmUp(1, baseLoopSize * nRuns);
+      auto stats =
+         ProfileIncreasingJobSize(nRuns, baseLoopSize, ProfileInMillisecs);
+      EXPECT_LE(stats.std, 0.001f * ACCEPTED_PROFILING_INCONSISTENCY_US);
    }
 
    {
-      std::vector<f32> overheadTimesMs;
-      utils::ProfileInMillisecs(DummyWork, nRuns * baseLoopSize); // warm up
-      for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
-         auto [result, profiledTimeMs] =
-            utils::ProfileInMillisecs(DummyWork, runIdx * baseLoopSize);
-         EXPECT_EQ(result, runIdx * baseLoopSize);
-         overheadTimesMs.push_back(static_cast<f32>(profiledTimeMs / runIdx));
-      }
-      auto stats = CalculateStatistics(std::move(overheadTimesMs));
-      EXPECT_LE(stats.mean, 0.001f * ACCEPTED_PROFILING_INCONSISTENCY_US);
-   }
-
-   {
-      std::vector<f32> overheadTimesUs;
-      utils::ProfileInMicrosecs(DummyWork, nRuns * baseLoopSize); // warm up
-      for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
-         auto [result, profiledTimeUs] =
-            utils::ProfileInMicrosecs(DummyWork, runIdx * baseLoopSize);
-         EXPECT_EQ(result, runIdx * baseLoopSize);
-         overheadTimesUs.push_back(static_cast<f32>(profiledTimeUs / runIdx));
-      }
-      auto stats = CalculateStatistics(std::move(overheadTimesUs));
+      WarmUp(1, baseLoopSize * nRuns);
+      auto stats =
+         ProfileIncreasingJobSize(nRuns, baseLoopSize, ProfileInMicrosecs);
       EXPECT_LE(stats.std, ACCEPTED_PROFILING_INCONSISTENCY_US);
    }
 }
 
-GTEST_TEST(CoreProfiling, ProfileFunction_OutputPassedThrough) {
+TEST_F(ProfilingFunctionTest, OutputPassedThrough) {
    struct Result {
       f32 a;
       u8 b;
@@ -157,37 +155,23 @@ GTEST_TEST(CoreProfiling, ProfileFunction_OutputPassedThrough) {
    }
 }
 
-GTEST_TEST(CoreProfiling, ProfileFunction_ArbitraryInputsAccepted) {
+TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
    {
-      auto DummyFunc        = [](i32 a, i32 b, i32 c) { return (a + b + c); };
-      auto [result, timeMs] = utils::ProfileInMillisecs(DummyFunc, 1, 2, 3);
-      EXPECT_EQ(result, DummyFunc(1, 2, 3));
+      auto DummyFunc = [](f64 a, f64 b, f64 c, f64 d, f64 e, f32 f, f64 g) {
+         return (a + b + c + d + e + static_cast<f64>(f) * g);
+      };
+      auto [result, timeMs] =
+         utils::ProfileInMillisecs(DummyFunc, 1., 2., 3., 4., 5., 6.f, 2.);
+      EXPECT_EQ(result, DummyFunc(1., 2., 3., 4., 5., 6.f, 2.));
    }
 
    {
-      auto DummyFunc = [](f64 a, f64 b, f64 c, f64 d) {
-         return (a + b + c + d);
+      auto DummyFunc = [](i32 a, const std::vector<f32>& v, f32 b, f64 c) {
+         return (static_cast<usize>(a) * static_cast<usize>(b))
+                 + static_cast<usize>(c) + v.size();
       };
-      auto [result, timeMs] =
-         utils::ProfileInMicrosecs(DummyFunc, 1.0, 2.0, 3.0, 4.0);
-      EXPECT_EQ(result, DummyFunc(1.0, 2.0, 3.0, 4.0));
-   }
-
-   {
-      auto DummyFunc = [](f64 a, f64 b, f64 c, f64 d, f64 e) {
-         return (a + b + c + d + e);
-      };
-      auto [result, timeMs] =
-         utils::ProfileInMillisecs(DummyFunc, 1.0, 2.0, 3.0, 4.0, 5.0);
-      EXPECT_EQ(result, DummyFunc(1.0, 2.0, 3.0, 4.0, 5.0));
-   }
-
-   {
-      auto DummyFunc = [](i32 a, const std::vector<f32>& v) {
-         return (static_cast<usize>(a) + v.size());
-      };
-      auto [result, timeMs] =
-         utils::ProfileInMicrosecs(DummyFunc, 1, std::vector{2.0f, 42.0f});
-      EXPECT_EQ(result, DummyFunc(1, {2.0f, 42.0f}));
+      auto [result, timeMs] = utils::ProfileInMicrosecs(
+         DummyFunc, 1, std::vector{2.0f, 42.0f}, 3.0f, 5.0);
+      EXPECT_EQ(result, DummyFunc(1, {2.0f, 42.0f}, 3.0f, 5.0));
    }
 }
