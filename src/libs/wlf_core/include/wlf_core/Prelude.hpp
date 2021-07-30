@@ -4,4 +4,4 @@
 
 #include "Assertion.hpp"
 #include "Defines.hpp"
-#include "Benchmark.hpp"
+#include "Profiling.hpp"

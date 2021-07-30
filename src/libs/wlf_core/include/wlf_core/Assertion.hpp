@@ -4,7 +4,6 @@
 
 #include <string_view>
 
-namespace wlf {
 namespace {
 
 enum class AssertionLevel : ptrdiff_t {
@@ -40,6 +39,8 @@ inline constexpr AssertionLevel EnabledAssertions =
 #endif
    ; // EnabledAssertions
 } // namespace
+
+namespace wlf {
 
 /* wlf::NoAsserts
  * Indicates if the library was configured to skip compilation of assertions

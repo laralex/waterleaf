@@ -43,10 +43,16 @@ mark_as_advanced(
 # ==== tests ====
 
 include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
-function(make_test name link_against)
+function(make_test name link_against group_variable)
    make_executable(${name} "${WLF_BASE_WARNING_FLAGS}" "${link_against} ${GTEST_TARGETS}" ${ARGN})
    gtest_discover_tests(${name} SOURCES ${ARGN}
       WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+   set(${group_variable} ${${group_variable}} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-make_test(wlf_unit_tests "wlf_render" DummyTest.cpp)
+make_test(critical_tests "wlf_render" WLF_CRITICAL_TESTS DummyTest.cpp)
+make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS CoreProfilingTest.cpp)
+make_test(all_tests "wlf_render" ""
+   ${WLF_CRITICAL_TESTS}
+   ${WLF_TIME_CONSUMING_TESTS}
+   ${WLF_AUX_TESTS})

@@ -1,10 +1,10 @@
 #include "Assertion.hpp"
 
-#include <spdlog/spdlog.h>
-
 #include <assert.h>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <string_view>
+
 
 
 
