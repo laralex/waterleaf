@@ -62,6 +62,7 @@ class ProfilingFunctionTest : public ::testing::Test {
 protected:
    void WarmUp(usize nWarmUps, usize workLoopSize) {
       for(auto run = 0; run < nWarmUps; ++run) {
+         SCOPED_TRACE("WarmUp");
          auto result = DummyWork(workLoopSize);
          EXPECT_EQ(result, workLoopSize);
       }
@@ -73,6 +74,7 @@ protected:
                                  ProfilingF profilingFunc) {
       mRunsTimings.clear();
       for(auto run = 0; run < nRuns; ++run) {
+         SCOPED_TRACE(run);
          auto [result, timing] =
             profilingFunc(DummyWork, std::forward<usize>(workLoopSize));
          EXPECT_EQ(result, workLoopSize);
@@ -87,6 +89,7 @@ protected:
                                        ProfilingF profilingFunc) {
       mRunsTimings.clear();
       for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
+         SCOPED_TRACE(runIdx);
          auto [result, timing] =
             profilingFunc(DummyWork, runIdx * baseLoopSize);
          EXPECT_EQ(result, runIdx * baseLoopSize);
@@ -153,6 +156,13 @@ TEST_F(ProfilingFunctionTest, OutputPassedThrough) {
       EXPECT_NEAR(result.a, 36.5f, 1e-5);
       EXPECT_EQ(result.b, 42);
    }
+
+   {
+      auto DummyFunc          = []() {};
+      auto timeMs             = utils::ProfileInMicrosecs(DummyFunc);
+      bool returnedOnlyTiming = std::is_same_v<u64, decltype(timeMs)>;
+      EXPECT_TRUE(returnedOnlyTiming);
+   }
 }
 
 TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
@@ -162,16 +172,40 @@ TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
       };
       auto [result, timeMs] =
          utils::ProfileInMillisecs(DummyFunc, 1., 2., 3., 4., 5., 6.f, 2.);
-      EXPECT_EQ(result, DummyFunc(1., 2., 3., 4., 5., 6.f, 2.));
+      EXPECT_FLOAT_EQ(result, DummyFunc(1., 2., 3., 4., 5., 6.f, 2.));
    }
 
    {
       auto DummyFunc = [](i32 a, const std::vector<f32>& v, f32 b, f64 c) {
          return (static_cast<usize>(a) * static_cast<usize>(b))
-                 + static_cast<usize>(c) + v.size();
+                + static_cast<usize>(c) + v.size();
       };
       auto [result, timeMs] = utils::ProfileInMicrosecs(
          DummyFunc, 1, std::vector{2.0f, 42.0f}, 3.0f, 5.0);
       EXPECT_EQ(result, DummyFunc(1, {2.0f, 42.0f}, 3.0f, 5.0));
+   }
+
+   {
+      auto DummyFunc        = []() { return 5; };
+      auto [result, timeMs] = utils::ProfileInMillisecs(DummyFunc);
+      EXPECT_EQ(result, DummyFunc());
+   }
+}
+
+TEST_F(ProfilingFunctionTest, CorrectTimeReturned) {
+   usize nRuns = 4, baseSleepTimeMs = 50;
+   auto SleepFunc = [](usize sleepMillisecs) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
+   };
+
+   {
+      WarmUp(1, 100000);
+      for(usize runIdx = 0; runIdx < nRuns; ++runIdx) {
+         SCOPED_TRACE(runIdx);
+         auto timeMs =
+            utils::ProfileInMillisecs(SleepFunc, baseSleepTimeMs * runIdx);
+         EXPECT_GE(timeMs, baseSleepTimeMs * runIdx);
+         EXPECT_LE(timeMs, baseSleepTimeMs * runIdx * 3 / 2);
+      }
    }
 }
