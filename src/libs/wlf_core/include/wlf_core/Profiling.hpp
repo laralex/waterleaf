@@ -27,14 +27,14 @@ namespace wlf::utils {
 
 template<typename F, typename... Args>
 ENGINE_API auto ProfileInMicrosecs(F&& function, Args&&... args) {
-   return ProfileRun<std::chrono::duration<wlf::u64, std::micro>>(function,
-                                                                  args...);
+   return ProfileRun<std::chrono::duration<wlf::u64, std::micro>>(
+      std::forward<F>(function), std::forward<Args>(args)...);
 }
 
 template<typename F, typename... Args>
 ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
-   return ProfileRun<std::chrono::duration<wlf::u64, std::milli>>(function,
-                                                                  args...);
+   return ProfileRun<std::chrono::duration<wlf::u64, std::milli>>(
+      std::forward<F>(function), std::forward<Args>(args)...);
 }
 
 class MilliseconStopwatch {
