@@ -50,8 +50,9 @@ function(make_test name link_against group_variable)
    set(${group_variable} ${${group_variable}} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-make_test(critical_tests "wlf_render" WLF_CRITICAL_TESTS DummyTest.cpp)
-make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS CoreProfilingTest.cpp)
+# make_test(critical_tests "wlf_render" WLF_CRITICAL_TESTS "")
+make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS ProfilingFunctionTest.cpp)
+make_test(aux_tests "wlf_render" WLF_AUX_TESTS ProfilingSectionTest.cpp)
 make_test(all_tests "wlf_render" ""
    ${WLF_CRITICAL_TESTS}
    ${WLF_TIME_CONSUMING_TESTS}

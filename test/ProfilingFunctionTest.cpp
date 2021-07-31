@@ -7,8 +7,6 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
-
-
 using namespace wlf;
 
 namespace {
@@ -30,7 +28,6 @@ void RemoveSampleOutliers(std::vector<f32>& sortedSample,
    auto newEndIdx = sortedSample.size();
    while(sortedSample[newEndIdx - 1] >= magnitudeThreshold) {
       --newEndIdx;
-      spdlog::info("e {} v {}", newEndIdx, sortedSample[newEndIdx]);
    }
    sortedSample.resize(newEndIdx);
 }
@@ -151,7 +148,7 @@ TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
 
 TEST_F(ProfilingFunctionTest, CorrectTimeReturned) {
    usize nRuns = 5, baseSleepTimeMs = 100;
-   f32 acceptedOverheadMs = 15.0f;
+   f32 acceptedSleepNoiseMs = 15.0f;
    auto SleepFunc         = [](usize sleepMillisecs) {
       std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
    };
@@ -161,14 +158,13 @@ TEST_F(ProfilingFunctionTest, CorrectTimeReturned) {
       mRunsTimings.clear();
       for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
          SCOPED_TRACE(runIdx);
-         auto timeMs =
-            utils::ProfileInMillisecs(SleepFunc, baseSleepTimeMs * runIdx);
-         EXPECT_GE(timeMs, baseSleepTimeMs * runIdx);
-         mRunsTimings.push_back(static_cast<f32>(timeMs)
+         auto timeUs =
+            utils::ProfileInMicrosecs(SleepFunc, baseSleepTimeMs * runIdx);
+         EXPECT_GE(timeUs, 1000 * baseSleepTimeMs * runIdx);
+         mRunsTimings.push_back(static_cast<f32>(timeUs)
                                 / static_cast<f32>(runIdx));
       }
-      auto stats = CalculateStatistics(mRunsTimings);
-      EXPECT_LE(stats.max - stats.min,
-                static_cast<f32>(baseSleepTimeMs) + acceptedOverheadMs);
+      auto statsUs = CalculateStatistics(mRunsTimings);
+      EXPECT_LE(statsUs.max - statsUs.min, 1000.f * acceptedSleepNoiseMs);
    }
 }
