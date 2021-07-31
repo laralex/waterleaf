@@ -17,6 +17,13 @@ inline constexpr bool IsDebugBuild = WLF_DEBUG;
 inline constexpr bool IsDebugBuild = false;
 #endif
 
+template<typename F, typename... Args>
+auto RunInDebug(F&& function, Args&&... args) {
+   if constexpr (IsDebugBuild) {
+      function(std::forward<Args>(args)...);
+   }
+}
+
 using f32 = float;
 using f64 = double;
 
