@@ -8,4 +8,5 @@ include(${CMAKE_SOURCE_DIR}/InternalUtils.cmake)
 make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
    "${WLF_STRICT_WARNING_FLAGS}" # flags
    "glm spdlog"                  # link against
-   Assertion.cpp)
+   Assertion.cpp
+   Profiling.cpp)
