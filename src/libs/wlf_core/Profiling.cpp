@@ -3,21 +3,27 @@
 using namespace wlf;
 using namespace wlf::utils;
 
-void Stopwatch::BeginMeasure() noexcept {
-   SetBeginning(std::chrono::high_resolution_clock::now());
+void Stopwatch::ResetBeginning(hires_clock::time_point timePoint) noexcept {
+   m_BeginningTimePoint = timePoint;
 }
 
-void Stopwatch::EndMeasure() noexcept {
-   auto now      = std::chrono::high_resolution_clock::now();
-   m_LastElapsed = now - m_LastTimePoint;
+void Stopwatch::RecordElapsed() noexcept {
+   auto now      = hires_clock::now();
+   auto elapsed  = now - m_BeginningTimePoint;
+   m_LastElapsed = std::max(std::chrono::nanoseconds(0), elapsed);
 }
 
-void Stopwatch::SetBeginning(hires_clock::time_point timePoint) noexcept {
-   m_LastTimePoint = timePoint;
+void Stopwatch::RecordElapsedThenReset() noexcept {
+   auto now             = hires_clock::now();
+   m_LastElapsed        = now - m_BeginningTimePoint;
+   m_BeginningTimePoint = now;
 }
 
-std::chrono::high_resolution_clock::duration
-Stopwatch::LastElapsed() const noexcept {
+hires_clock::time_point Stopwatch::GetBeginningTimepoint() const noexcept {
+   return m_BeginningTimePoint;
+}
+
+hires_clock::duration Stopwatch::LastElapsed() const noexcept {
    return m_LastElapsed;
 }
 
@@ -42,7 +48,8 @@ MultiStopwatchBuilder::WithStopwatchName(usize key,
                                          std::string&& name) noexcept {
    // TODO(laralex): signal error
    if(key < m_Stopwatches.size()) {
-      m_Stopwatches[key].Name = std::make_optional(name);
+      if(!m_Stopwatches[key].Name) { --m_LeftToInitialize; }
+      m_Stopwatches[key].Name = std::make_optional(std::move(name));
    }
    return *this;
 }
@@ -58,20 +65,35 @@ MultiStopwatch::ConsumeBuilder(MultiStopwatchBuilder&& builder) noexcept {
    return std::make_optional(MultiStopwatch{std::move(builder.m_Stopwatches)});
 }
 
+usize MultiStopwatch::StopwatchesNumber() const noexcept {
+   return m_Stopwatches.size();
+}
+
 bool MultiStopwatch::IsKeyValid(usize key) const noexcept {
    return key < m_Stopwatches.size();
 }
 
-void MultiStopwatch::BeginMeasureOf(usize key) noexcept {
-   // TODO(laralex): signal error
-   if(!IsKeyValid(key)) return;
-   m_Stopwatches[key].Stopwatch.BeginMeasure();
+bool MultiStopwatch::ResetBeginningOf(
+   usize key,
+   hires_clock::time_point timePoint) noexcept {
+   // TODO(laralex): signal error with exception?
+   if(!IsKeyValid(key)) return false;
+   m_Stopwatches[key].Stopwatch.ResetBeginning(timePoint);
+   return true;
 }
 
-void MultiStopwatch::EndMeasureOf(usize key) noexcept {
-   // TODO(laralex): signal error
-   if(!IsKeyValid(key)) return;
-   m_Stopwatches[key].Stopwatch.EndMeasure();
+bool MultiStopwatch::RecordElapsedThenResetOf(usize key) noexcept {
+   // TODO(laralex): signal error with exception?
+   if(!IsKeyValid(key)) return false;
+   m_Stopwatches[key].Stopwatch.RecordElapsedThenReset();
+   return true;
+}
+
+bool MultiStopwatch::RecordElapsedOf(usize key) noexcept {
+   // TODO(laralex): signal error with exception?
+   if(!IsKeyValid(key)) return false;
+   m_Stopwatches[key].Stopwatch.RecordElapsed();
+   return true;
 }
 
 std::optional<std::string_view>

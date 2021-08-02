@@ -2,6 +2,8 @@
 #include "Defines.hpp"
 
 #include <chrono>
+#include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -44,21 +46,21 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
       std::forward<F>(function), std::forward<Args>(args)...);
 }
 
-class Stopwatch {
+class ENGINE_API Stopwatch {
 public:
-   Stopwatch() : m_LastTimePoint(hires_clock::now()), m_LastElapsed() {}
-   Stopwatch(Stopwatch&& s)
-         : m_LastTimePoint(std::move(s.m_LastTimePoint))
-         , m_LastElapsed(std::move(s.m_LastElapsed)) {}
-   void BeginMeasure() noexcept;
-   void EndMeasure() noexcept;
-   void SetBeginning(hires_clock::time_point timePoint) noexcept;
+   Stopwatch() : m_BeginningTimePoint(hires_clock::now()), m_LastElapsed() {}
+
+   void ResetBeginning(
+      hires_clock::time_point fromTimePoint = hires_clock::now()) noexcept;
+   void RecordElapsed() noexcept;
+   void RecordElapsedThenReset() noexcept;
+   hires_clock::time_point GetBeginningTimepoint() const noexcept;
    hires_clock::duration LastElapsed() const noexcept;
    wlf::u64 LastElapsedUs() const noexcept;
    wlf::u64 LastElapsedMs() const noexcept;
 
 private:
-   hires_clock::time_point m_LastTimePoint;
+   hires_clock::time_point m_BeginningTimePoint;
    hires_clock::duration m_LastElapsed;
 };
 
@@ -69,14 +71,12 @@ struct NamedStopwatch {
    NamedStopwatch() : Name(std::nullopt), Stopwatch() {}
    NamedStopwatch(std::string&& name)
          : Name(std::make_optional(std::move(name))), Stopwatch() {}
-   NamedStopwatch(NamedStopwatch&& s)
-         : Name(std::move(s.Name)), Stopwatch(std::move(s.Stopwatch)) {}
 };
 } // namespace
 
-class MultiStopwatch;
+class ENGINE_API MultiStopwatch;
 
-class MultiStopwatchBuilder {
+class ENGINE_API MultiStopwatchBuilder {
 public:
    MultiStopwatchBuilder(usize nStopwatches)
          : m_Stopwatches(nStopwatches), m_LeftToInitialize(nStopwatches) {}
@@ -90,17 +90,26 @@ private:
    usize m_LeftToInitialize;
 };
 
-class MultiStopwatch {
+class ENGINE_API MultiStopwatch {
 public:
    MultiStopwatch() = delete;
+   MultiStopwatch(const MultiStopwatch&) = delete;
+   MultiStopwatch& operator=(const MultiStopwatch&) = delete;
+   MultiStopwatch(MultiStopwatch&&) = default;
+   MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
    static MultiStopwatchBuilder CreateBuilder(usize nStopwatches) noexcept;
 
    static std::optional<MultiStopwatch>
    ConsumeBuilder(MultiStopwatchBuilder&&) noexcept;
 
-   void BeginMeasureOf(usize key) noexcept;
-   void EndMeasureOf(usize key) noexcept;
+   usize StopwatchesNumber() const noexcept;
+
+   bool ResetBeginningOf(
+      usize key,
+      hires_clock::time_point fromTimePoint = hires_clock::now()) noexcept;
+   bool RecordElapsedThenResetOf(usize key) noexcept;
+   bool RecordElapsedOf(usize key) noexcept;
    bool IsKeyValid(usize key) const noexcept;
 
    std::optional<std::string_view> NameOf(usize key) const noexcept;
@@ -115,7 +124,7 @@ private:
 };
 
 
-class FramePartsProfiler {
+class ENGINE_API FramePartsProfiler {
 public:
    FramePartsProfiler(MultiStopwatch&& stopwatches)
          : m_Stopwatches(std::move(stopwatches)) {}

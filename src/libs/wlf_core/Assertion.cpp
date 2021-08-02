@@ -5,9 +5,6 @@
 #include <spdlog/spdlog.h>
 #include <string_view>
 
-
-
-
 using namespace wlf;
 
 namespace {
