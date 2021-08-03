@@ -28,7 +28,7 @@ TEST(ProfilingMultiStopwatch, BuilderCorrectness) {
       builder.WithStopwatchName(10, "ZZZ");
       EXPECT_TRUE(builder.IsComplete());
 
-      auto multistopwatch = MultiStopwatch::ConsumeBuilder(std::move(builder));
+      auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
       EXPECT_TRUE(multistopwatch);
 
       EXPECT_EQ(nStopwatches, multistopwatch->StopwatchesNumber());
@@ -46,7 +46,7 @@ TEST(ProfilingMultiStopwatch, BuilderCorrectness) {
       builder.WithStopwatchName(10, "ZZZ");
       EXPECT_TRUE(builder.IsComplete());
 
-      auto multistopwatch = MultiStopwatch::ConsumeBuilder(std::move(builder));
+      auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
       EXPECT_TRUE(multistopwatch);
    }
 
@@ -55,7 +55,7 @@ TEST(ProfilingMultiStopwatch, BuilderCorrectness) {
          MultiStopwatch::CreateBuilder(2).WithStopwatchName(0, "AAA");
       EXPECT_FALSE(builder.IsComplete());
 
-      auto multistopwatch = MultiStopwatch::ConsumeBuilder(std::move(builder));
+      auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
       EXPECT_FALSE(multistopwatch);
    }
 }
@@ -67,7 +67,7 @@ TEST(ProfilingMultiStopwatch, StopwatchesIndependence) {
                      .WithStopwatchName(1, "BBB")
                      .WithStopwatchName(2, "CCC");
 
-   auto multistopwatch = MultiStopwatch::ConsumeBuilder(std::move(builder));
+   auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
    EXPECT_TRUE(multistopwatch);
 
    EXPECT_TRUE(multistopwatch->IsKeyValid(0));

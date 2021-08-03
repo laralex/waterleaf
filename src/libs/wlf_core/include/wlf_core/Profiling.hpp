@@ -65,40 +65,35 @@ private:
    hires_clock::duration m_LastElapsed;
 };
 
-namespace {
-struct NamedStopwatch {
-   std::optional<std::string> Name;
-   Stopwatch Stopwatch;
-   NamedStopwatch() : Name(std::nullopt), Stopwatch() {}
-   NamedStopwatch(std::string&& name)
-         : Name(std::make_optional(std::move(name))), Stopwatch() {}
-};
-} // namespace
-
 class ENGINE_API MultiStopwatch;
 
 class ENGINE_API MultiStopwatchBuilder {
 public:
    MultiStopwatchBuilder(usize nStopwatches)
-         : m_Stopwatches(nStopwatches), m_LeftToInitialize(nStopwatches) {}
+         : m_Stopwatches(nStopwatches)
+         , m_Names(nStopwatches)
+         , m_LeftToInitialize(nStopwatches) {}
    bool IsComplete() const noexcept;
-   MultiStopwatchBuilder&
+   MultiStopwatchBuilder
    WithStopwatchName(usize key, std::string&& displayedName) noexcept;
 
 private:
    friend MultiStopwatch;
-   std::vector<NamedStopwatch> m_Stopwatches;
+   std::vector<Stopwatch> m_Stopwatches;
+   std::vector<std::optional<std::string>> m_Names;
    usize m_LeftToInitialize;
 };
 
 class ENGINE_API MultiStopwatch : public INonCopyable {
 public:
-   MultiStopwatch() = delete;
+   MultiStopwatch()                 = delete;
+   MultiStopwatch(MultiStopwatch&&) = default;
+   MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
    static MultiStopwatchBuilder CreateBuilder(usize nStopwatches) noexcept;
 
    static std::optional<MultiStopwatch>
-   ConsumeBuilder(MultiStopwatchBuilder&&) noexcept;
+   FromBuilder(MultiStopwatchBuilder&&) noexcept;
 
    usize StopwatchesNumber() const noexcept;
 
@@ -115,21 +110,24 @@ public:
    std::optional<hires_clock::duration> LastElapsedOf(usize key) const noexcept;
 
 private:
-   MultiStopwatch(std::vector<NamedStopwatch>&& stopwatches)
-         : m_Stopwatches(std::move(stopwatches)) {}
-   std::vector<NamedStopwatch> m_Stopwatches;
+   MultiStopwatch(MultiStopwatchBuilder&& builder)
+         : m_Stopwatches(std::move(builder.m_Stopwatches))
+         , m_Names(std::move(builder.m_Names)) {}
+   std::vector<Stopwatch> m_Stopwatches;
+   std::vector<std::optional<std::string>> m_Names;
 };
 
 
-class ENGINE_API FramePartsProfiler : public INonCopyable {
+class ENGINE_API FrameProfiler : public INonCopyable {
 public:
-   FramePartsProfiler(MultiStopwatch&& stopwatches)
-         : m_Stopwatches(std::move(stopwatches)) {}
-   void StartNewFrame() noexcept;
+   FrameProfiler(MultiStopwatch&& stopwatches)
+         : m_PartsStopwatches(std::move(stopwatches)), m_FrameTimeStopwatch() {}
+   void StartNewFrame() noexcept {}
    void FindLongestElapsed(usize nLongest) const noexcept;
 
 private:
-   MultiStopwatch m_Stopwatches;
+   MultiStopwatch m_PartsStopwatches;
+   Stopwatch m_FrameTimeStopwatch;
 };
 
 } // namespace wlf::utils
