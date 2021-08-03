@@ -1,5 +1,6 @@
 #pragma once
 #include "Defines.hpp"
+#include "UtilityInterfaces.hpp"
 
 #include <chrono>
 #include <functional>
@@ -90,13 +91,9 @@ private:
    usize m_LeftToInitialize;
 };
 
-class ENGINE_API MultiStopwatch {
+class ENGINE_API MultiStopwatch : public INonCopyable {
 public:
    MultiStopwatch() = delete;
-   MultiStopwatch(const MultiStopwatch&) = delete;
-   MultiStopwatch& operator=(const MultiStopwatch&) = delete;
-   MultiStopwatch(MultiStopwatch&&) = default;
-   MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
    static MultiStopwatchBuilder CreateBuilder(usize nStopwatches) noexcept;
 
@@ -124,7 +121,7 @@ private:
 };
 
 
-class ENGINE_API FramePartsProfiler {
+class ENGINE_API FramePartsProfiler : public INonCopyable {
 public:
    FramePartsProfiler(MultiStopwatch&& stopwatches)
          : m_Stopwatches(std::move(stopwatches)) {}
