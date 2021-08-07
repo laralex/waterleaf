@@ -50,7 +50,7 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
 
 class ENGINE_API Stopwatch final {
 public:
-   Stopwatch() noexcept
+   explicit Stopwatch() noexcept
          : m_BeginningTimePoint(hires_clock::now()), m_SavedElapsed() {}
 
    hires_timepoint Beginning() const noexcept;
@@ -71,7 +71,8 @@ private:
 
 class ENGINE_API RecordingStopwatch final : public INonCopyable {
 public:
-   RecordingStopwatch(usize recordsCapacity, Stopwatch&& stopwatch) noexcept
+   explicit RecordingStopwatch(usize recordsCapacity,
+                               Stopwatch&& stopwatch) noexcept
          : INonCopyable()
          , m_Stopwatch(std::move(stopwatch))
          , m_Records(recordsCapacity) {}
@@ -96,7 +97,7 @@ class ENGINE_API MultiStopwatch;
 
 class ENGINE_API MultiStopwatchBuilder final {
 public:
-   MultiStopwatchBuilder(usize nStopwatches) noexcept
+   explicit MultiStopwatchBuilder(usize nStopwatches) noexcept
          : m_Stopwatches(nStopwatches)
          , m_Names(nStopwatches)
          , m_LeftToInitialize(nStopwatches) {}
@@ -113,8 +114,8 @@ private:
 
 class ENGINE_API MultiStopwatch final : public INonCopyable {
 public:
-   MultiStopwatch()                 = delete;
-   MultiStopwatch(MultiStopwatch&&) = default;
+   explicit MultiStopwatch()                 = delete;
+   explicit MultiStopwatch(MultiStopwatch&&) = default;
    MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
    static std::optional<MultiStopwatch>
@@ -147,7 +148,7 @@ public:
    std::optional<wlf::u64> SavedElapsedMsOf(usize key) const noexcept;
 
 private:
-   MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
+   explicit MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
          : m_Stopwatches(std::move(builder.m_Stopwatches))
          , m_Names(std::move(builder.m_Names)) {}
    std::vector<Stopwatch> m_Stopwatches;
@@ -156,8 +157,8 @@ private:
 
 class RecordingMultiStopwatch final : public INonCopyable {
 public:
-   RecordingMultiStopwatch(usize nHistoricalStates,
-                           MultiStopwatch&& stopwatches) noexcept
+   explicit RecordingMultiStopwatch(usize nHistoricalStates,
+                                    MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
          , m_CapacityOfRecords(nHistoricalStates)
          , m_Records(nHistoricalStates * stopwatches.StopwatchesNumber())
@@ -184,11 +185,12 @@ private:
 
 class ENGINE_API FrameProfiler final : public INonCopyable {
 public:
-   FrameProfiler(usize nFramesBuffered, MultiStopwatch&& stopwatches) noexcept
+   explicit FrameProfiler(usize nFramesBuffered,
+                          MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
          , m_NumFramesBuffered(nFramesBuffered)
          , m_ProfilePartsMultiStopwatch(nFramesBuffered, std::move(stopwatches))
-         , m_FrameTimeStopwatch(nFramesBuffered, {}) {}
+         , m_FrameTimeStopwatch(nFramesBuffered, Stopwatch{}) {}
 
    wlf::usize StopwatchesNumber() const noexcept;
    wlf::usize BufferedFramesNumber() const noexcept;

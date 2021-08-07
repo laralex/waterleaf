@@ -91,7 +91,7 @@ MultiStopwatchBuilder::WithStopwatchName(usize key,
    if(key < m_Stopwatches.size()) {
       if(!m_Names[key]) { --m_LeftToInitialize; }
       m_Names[key]       = std::make_optional(std::move(name));
-      m_Stopwatches[key] = {};
+      m_Stopwatches[key] = Stopwatch{};
    }
    return *this;
 }
