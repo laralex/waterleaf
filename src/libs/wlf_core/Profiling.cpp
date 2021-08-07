@@ -171,7 +171,7 @@ bool MultiStopwatch::ClearElapsedOf(usize key) noexcept {
    return true;
 }
 
-void MultiStopwatch::ClearElapsed() noexcept {
+void MultiStopwatch::ClearElapsedOfAll() noexcept {
    for(auto& stopwatch : m_Stopwatches) {
       stopwatch.ClearElapsed();
    }
@@ -254,7 +254,7 @@ bool FrameProfiler::IsFrameDataAccessible(usize numFramesBack) const noexcept {
 
 void FrameProfiler::StartNewFrame() noexcept {
    m_ProfilePartsMultiStopwatch.PushStateToHistory();
-   m_ProfilePartsMultiStopwatch.InnerStopwatch().ClearElapsed();
+   m_ProfilePartsMultiStopwatch.InnerStopwatch().ClearElapsedOfAll();
    m_FrameTimeStopwatch.InnerStopwatch().SaveElapsed(/*resetBeginning*/ true);
    m_FrameTimeStopwatch.PushStateToHistory();
 }

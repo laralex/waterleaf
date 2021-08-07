@@ -140,7 +140,7 @@ public:
    void AddSaveElapsedOfAll(bool resetBeginning = false) noexcept;
 
    bool ClearElapsedOf(usize key) noexcept;
-   void ClearElapsed() noexcept;
+   void ClearElapsedOfAll() noexcept;
 
    std::optional<hires_duration> SavedElapsedOf(usize key) const noexcept;
    std::optional<wlf::u64> SavedElapsedUsOf(usize key) const noexcept;
