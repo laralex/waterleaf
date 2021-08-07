@@ -58,7 +58,7 @@ make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS
    MultiStopwatchTest.cpp
    RecordingMultiStopwatchTest.cpp)
 
-make_test(dev_test "wlf_render" "" RecordingStopwatchTest.cpp)
+make_test(dev_test "wlf_render" "" RecordingMultiStopwatchTest.cpp)
 
 #make_test(aux_tests "wlf_render" WLF_AUX_TESTS)
 

@@ -161,7 +161,7 @@ private:
    std::vector<std::optional<std::string>> m_Names;
 };
 
-class RecordingMultiStopwatch final : public INonCopyable {
+class ENGINE_API RecordingMultiStopwatch final : public INonCopyable {
 public:
    explicit RecordingMultiStopwatch(usize recordsCapacity,
                                     MultiStopwatch&& stopwatches) noexcept
