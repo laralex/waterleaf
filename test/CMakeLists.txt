@@ -52,12 +52,15 @@ endfunction()
 
 # make_test(critical_tests "wlf_render" WLF_CRITICAL_TESTS "")
 make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS 
-   ProfilingFunctionTest.cpp
-   ProfilingStopwatchTest.cpp)
+   FunctionProfilingTest.cpp
+   StopwatchTest.cpp
+   BufferingStopwatchTest.cpp
+   MultiStopwatchTest.cpp
+   BufferingMultiStopwatchTest.cpp)
 
-make_test(aux_tests "wlf_render" WLF_AUX_TESTS
-   ProfilingMultiStopwatchTest.cpp
-   ProfilingFramePartsTest.cpp)
+make_test(dev_test "wlf_render" "" MultiStopwatchTest.cpp)
+
+#make_test(aux_tests "wlf_render" WLF_AUX_TESTS)
 
 make_test(all_tests "wlf_render" ""
    ${WLF_CRITICAL_TESTS}

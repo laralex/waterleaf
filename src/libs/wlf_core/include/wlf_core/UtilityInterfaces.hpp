@@ -8,9 +8,9 @@ public:
    INonCopyable& operator=(const INonCopyable&) = delete;
    INonCopyable(INonCopyable&&) = default;
    INonCopyable& operator=(INonCopyable&&) = default;
+   ~INonCopyable() = default;
 protected:
    INonCopyable() = default;
-   ~INonCopyable() = default;
 };
 
 }

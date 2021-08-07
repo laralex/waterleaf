@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-
 namespace {
 
-using hires_clock = std::chrono::high_resolution_clock;
+using hires_clock     = std::chrono::high_resolution_clock;
+using hires_duration  = hires_clock::duration;
+using hires_timepoint = hires_clock::time_point;
 
 template<typename DurationT, typename F, typename... Args>
 auto ProfileRun(F&& function, Args&&... args) {
@@ -47,29 +48,55 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
       std::forward<F>(function), std::forward<Args>(args)...);
 }
 
-class ENGINE_API Stopwatch {
+class ENGINE_API Stopwatch final {
 public:
-   Stopwatch() : m_BeginningTimePoint(hires_clock::now()), m_LastElapsed() {}
+   Stopwatch() noexcept
+         : m_BeginningTimePoint(hires_clock::now()), m_SavedElapsed() {}
 
-   void ResetBeginning(
-      hires_clock::time_point fromTimePoint = hires_clock::now()) noexcept;
-   void RecordElapsed() noexcept;
-   void RecordElapsedThenReset() noexcept;
-   hires_clock::time_point GetBeginningTimepoint() const noexcept;
-   hires_clock::duration LastElapsed() const noexcept;
-   wlf::u64 LastElapsedUs() const noexcept;
-   wlf::u64 LastElapsedMs() const noexcept;
+   hires_timepoint Beginning() const noexcept;
+   void
+   SetBeginning(hires_timepoint timePointInPast = hires_clock::now()) noexcept;
+
+   void SaveElapsed(bool resetBeginning = false) noexcept;
+   void AddSaveElapsed(bool resetBeginning = false) noexcept;
+   void ClearElapsed() noexcept;
+   hires_duration SavedElapsed() const noexcept;
+   wlf::u64 SavedElapsedUs() const noexcept;
+   wlf::u64 SavedElapsedMs() const noexcept;
 
 private:
-   hires_clock::time_point m_BeginningTimePoint;
-   hires_clock::duration m_LastElapsed;
+   hires_timepoint m_BeginningTimePoint;
+   hires_duration m_SavedElapsed;
+};
+
+class ENGINE_API BufferedStopwatch final : public INonCopyable {
+public:
+   BufferedStopwatch(usize nHistoricalStates, Stopwatch&& stopwatch) noexcept
+         : INonCopyable()
+         , m_Stopwatch(std::move(stopwatch))
+         , m_History(nHistoricalStates) {}
+
+   Stopwatch& InnerStopwatch() noexcept;
+   const Stopwatch& InnerStopwatch() const noexcept;
+   void PushStateToHistory() noexcept;
+   void ClearHistory() noexcept;
+   bool IsStateOffsetAvailable(usize stateOffset) const noexcept;
+
+   std::optional<wlf::u64>
+   HistoricalElapsedUs(usize stateOffset) const noexcept;
+
+private:
+   usize m_HistoricalStatesEverSaved = 0;
+   Stopwatch m_Stopwatch;
+   std::vector<wlf::u64> m_History;
+   usize m_HistoryIt = 0;
 };
 
 class ENGINE_API MultiStopwatch;
 
-class ENGINE_API MultiStopwatchBuilder {
+class ENGINE_API MultiStopwatchBuilder final {
 public:
-   MultiStopwatchBuilder(usize nStopwatches)
+   MultiStopwatchBuilder(usize nStopwatches) noexcept
          : m_Stopwatches(nStopwatches)
          , m_Names(nStopwatches)
          , m_LeftToInitialize(nStopwatches) {}
@@ -84,50 +111,104 @@ private:
    usize m_LeftToInitialize;
 };
 
-class ENGINE_API MultiStopwatch : public INonCopyable {
+class ENGINE_API MultiStopwatch final : public INonCopyable {
 public:
    MultiStopwatch()                 = delete;
    MultiStopwatch(MultiStopwatch&&) = default;
    MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
-   static MultiStopwatchBuilder CreateBuilder(usize nStopwatches) noexcept;
-
    static std::optional<MultiStopwatch>
    FromBuilder(MultiStopwatchBuilder&&) noexcept;
 
    usize StopwatchesNumber() const noexcept;
-
-   bool ResetBeginningOf(
-      usize key,
-      hires_clock::time_point fromTimePoint = hires_clock::now()) noexcept;
-   bool RecordElapsedThenResetOf(usize key) noexcept;
-   bool RecordElapsedOf(usize key) noexcept;
    bool IsKeyValid(usize key) const noexcept;
-
    std::optional<std::string_view> NameOf(usize key) const noexcept;
-   std::optional<wlf::u64> LastElapsedUsOf(usize key) const noexcept;
-   std::optional<wlf::u64> LastElapsedMsOf(usize key) const noexcept;
-   std::optional<hires_clock::duration> LastElapsedOf(usize key) const noexcept;
+
+   std::optional<hires_timepoint> BeginningOf(usize key) const noexcept;
+
+   bool SetBeginningOf(
+      usize key,
+      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+
+   void SetBeginningOfAll(
+      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+
+   bool SaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
+   void SaveElapsedOfAll(bool resetBeginning = false) noexcept;
+
+   bool AddSaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
+   void AddSaveElapsedOfAll(bool resetBeginning = false) noexcept;
+
+   bool ClearElapsedOf(usize key) noexcept;
+   void ClearElapsed() noexcept;
+
+   std::optional<hires_duration> SavedElapsedOf(usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedUsOf(usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedMsOf(usize key) const noexcept;
 
 private:
-   MultiStopwatch(MultiStopwatchBuilder&& builder)
+   MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
          : m_Stopwatches(std::move(builder.m_Stopwatches))
          , m_Names(std::move(builder.m_Names)) {}
    std::vector<Stopwatch> m_Stopwatches;
    std::vector<std::optional<std::string>> m_Names;
 };
 
-
-class ENGINE_API FrameProfiler : public INonCopyable {
+class BufferedMultiStopwatch final : public INonCopyable {
 public:
-   FrameProfiler(MultiStopwatch&& stopwatches)
-         : m_PartsStopwatches(std::move(stopwatches)), m_FrameTimeStopwatch() {}
-   void StartNewFrame() noexcept {}
-   void FindLongestElapsed(usize nLongest) const noexcept;
+   BufferedMultiStopwatch(usize nHistoricalStates,
+                          MultiStopwatch&& stopwatches) noexcept
+         : INonCopyable()
+         , m_HistoricalStatesCapacity(nHistoricalStates)
+         , m_History(nHistoricalStates * stopwatches.StopwatchesNumber())
+         , m_MultiStopwatch(std::move(stopwatches)) {}
+
+   MultiStopwatch& InnerStopwatch() noexcept;
+   const MultiStopwatch& InnerStopwatch() const noexcept;
+   void PushStateToHistory() noexcept;
+   void ClearHistory() noexcept;
+
+   bool IsKeyValid(usize key) const noexcept;
+   bool IsStateOffsetAvailable(usize stateOffset) const noexcept;
+
+   std::optional<wlf::u64>
+   HistoricalElapsedUsOf(usize key, usize stateOffset) const noexcept;
 
 private:
-   MultiStopwatch m_PartsStopwatches;
-   Stopwatch m_FrameTimeStopwatch;
+   usize m_HistoricalStatesCapacity;
+   usize m_HistoricalStatesEverSaved = 0;
+   std::vector<wlf::u64> m_History;
+   usize m_HistoryIt = 0;
+   MultiStopwatch m_MultiStopwatch;
+};
+
+class ENGINE_API FrameProfiler final : public INonCopyable {
+public:
+   FrameProfiler(usize nFramesBuffered, MultiStopwatch&& stopwatches) noexcept
+         : INonCopyable()
+         , m_NumFramesBuffered(nFramesBuffered)
+         , m_ProfilePartsMultiStopwatch(nFramesBuffered, std::move(stopwatches))
+         , m_FrameTimeStopwatch(nFramesBuffered, {}) {}
+
+   wlf::usize StopwatchesNumber() const noexcept;
+   wlf::usize BufferedFramesNumber() const noexcept;
+   bool IsKeyValid(usize key) const noexcept;
+   bool IsFrameDataAccessible(usize numFramesBack) const noexcept;
+
+   void StartNewFrame() noexcept;
+   bool BeginMeasureOf(usize key) noexcept;
+   bool EndMeasureOf(usize key) noexcept;
+
+   std::optional<wlf::u64> CurrentCumulativeTimingOf(usize key) const noexcept;
+   std::optional<wlf::u64>
+   HistoricalTimingOf(usize key, usize numFramesBack) const noexcept;
+   std::optional<wlf::u64>
+   HistoricalFrametime(usize numFramesBack = 1) const noexcept;
+
+private:
+   usize m_NumFramesBuffered;
+   BufferedMultiStopwatch m_ProfilePartsMultiStopwatch;
+   BufferedStopwatch m_FrameTimeStopwatch;
 };
 
 } // namespace wlf::utils

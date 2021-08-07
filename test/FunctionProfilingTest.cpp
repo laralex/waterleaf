@@ -75,7 +75,7 @@ Statistics CalculateStatistics(std::vector<f32>& sample) {
    return resultStats;
 }
 
-class ProfilingFunctionTest : public ::testing::Test {
+class FunctionProfilingTest : public ::testing::Test {
 protected:
    std::vector<f32> mRunsTimings;
 
@@ -90,7 +90,7 @@ protected:
 
 } // namespace
 
-TEST_F(ProfilingFunctionTest, OutputPassedThrough) {
+TEST_F(FunctionProfilingTest, OutputPassedThrough) {
    struct Result {
       f32 a;
       u8 b;
@@ -119,7 +119,7 @@ TEST_F(ProfilingFunctionTest, OutputPassedThrough) {
    }
 }
 
-TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
+TEST_F(FunctionProfilingTest, ArbitraryInputsAccepted) {
    {
       auto DummyFunc = [](f64 a, f64 b, f64 c, f64 d, f64 e, f32 f, f64 g) {
          return (a + b + c + d + e + static_cast<f64>(f) * g);
@@ -146,7 +146,7 @@ TEST_F(ProfilingFunctionTest, ArbitraryInputsAccepted) {
    }
 }
 
-TEST_F(ProfilingFunctionTest, CorrectTimeReturned) {
+TEST_F(FunctionProfilingTest, CorrectTimeReturned) {
    usize nRuns = 5, baseSleepTimeMs = 100;
    f32 acceptedSleepNoiseMs = 15.0f;
    auto SleepFunc         = [](usize sleepMillisecs) {
