@@ -114,3 +114,17 @@ TEST(RecordingStopwatchTest, RecordsCapacity) {
       }
    }
 }
+/* 
+TEST(RecordingStopwatchTest, UnassignableInternalStopwatch) {
+   u64 nRepeats           = 20;
+   usize nRecordsCapacity = 100;
+   for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
+      RecordingStopwatch stopwatch{nRecordsCapacity, Stopwatch{}};
+
+      auto now         = std::chrono::high_resolution_clock::now();
+      auto offsetHours = std::chrono::hours(1000);
+      stopwatch.InnerStopwatch().SetBeginning(now - offsetHours);
+
+      stopwatch.InnerStopwatch() = Stopwatch{};
+   }
+} */

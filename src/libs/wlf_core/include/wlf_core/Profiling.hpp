@@ -1,6 +1,7 @@
 #pragma once
 #include "Defines.hpp"
 #include "UtilityInterfaces.hpp"
+#include "UtilityWrappers.hpp"
 
 #include <chrono>
 #include <functional>
@@ -48,7 +49,7 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
       std::forward<F>(function), std::forward<Args>(args)...);
 }
 
-class ENGINE_API Stopwatch final {
+class ENGINE_API Stopwatch {
 public:
    explicit Stopwatch() noexcept
          : m_BeginningTimePoint(hires_clock::now()), m_SavedElapsed() {}
@@ -69,7 +70,7 @@ private:
    hires_duration m_SavedElapsed;
 };
 
-class ENGINE_API RecordingStopwatch final : public INonCopyable {
+class ENGINE_API RecordingStopwatch : public INonCopyable {
 public:
    explicit RecordingStopwatch(usize recordsCapacity,
                                Stopwatch&& stopwatch) noexcept
@@ -81,8 +82,9 @@ public:
       m_Records.shrink_to_fit();
    }
 
-   Stopwatch& InnerStopwatch() noexcept;
-   const Stopwatch& InnerStopwatch() const noexcept;
+   NonAssignableWrap<Stopwatch>& InnerStopwatch() noexcept;
+   const NonAssignableWrap<Stopwatch>&
+   InnerStopwatch() const noexcept;
 
    void RecordState() noexcept;
    void ClearRecords() noexcept;
@@ -93,7 +95,7 @@ public:
    RecordedElapsedUs(usize recordingOffset) const noexcept;
 
 private:
-   Stopwatch m_Stopwatch;
+   NonAssignableWrap<Stopwatch> m_Stopwatch;
    std::vector<wlf::u64> m_Records;
    usize m_RecordsEverSaved;
    usize m_RecordsIt;
@@ -101,7 +103,7 @@ private:
 
 class ENGINE_API MultiStopwatch;
 
-class ENGINE_API MultiStopwatchBuilder final {
+class ENGINE_API MultiStopwatchBuilder {
 public:
    explicit MultiStopwatchBuilder(usize nStopwatches) noexcept
          : m_Stopwatches(nStopwatches)
@@ -118,7 +120,7 @@ private:
    usize m_LeftToInitialize;
 };
 
-class ENGINE_API MultiStopwatch final : public INonCopyable {
+class ENGINE_API MultiStopwatch : public INonCopyable {
 public:
    explicit MultiStopwatch()                 = delete;
    explicit MultiStopwatch(MultiStopwatch&&) = default;
@@ -161,7 +163,7 @@ private:
    std::vector<std::optional<std::string>> m_Names;
 };
 
-class ENGINE_API RecordingMultiStopwatch final : public INonCopyable {
+class ENGINE_API RecordingMultiStopwatch : public INonCopyable {
 public:
    explicit RecordingMultiStopwatch(usize recordsCapacity,
                                     MultiStopwatch&& stopwatches) noexcept
@@ -172,8 +174,8 @@ public:
       m_Records.shrink_to_fit();
    }
 
-   MultiStopwatch& InnerStopwatch() noexcept;
-   const MultiStopwatch& InnerStopwatch() const noexcept;
+   NonAssignableWrap<MultiStopwatch>& InnerStopwatch() noexcept;
+   const NonAssignableWrap<MultiStopwatch>& InnerStopwatch() const noexcept;
    void RecordState() noexcept;
    void ClearRecords() noexcept;
 
@@ -189,10 +191,10 @@ private:
    usize m_RecordsEverSaved = 0;
    std::vector<wlf::u64> m_Records;
    usize m_RecordsIt = 0;
-   MultiStopwatch m_MultiStopwatch;
+   NonAssignableWrap<MultiStopwatch> m_MultiStopwatch;
 };
 
-class ENGINE_API FrameProfiler final : public INonCopyable {
+class ENGINE_API FrameProfiler : public INonCopyable {
 public:
    explicit FrameProfiler(usize nFramesBuffered,
                           MultiStopwatch&& stopwatches) noexcept

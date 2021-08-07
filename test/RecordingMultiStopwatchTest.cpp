@@ -51,7 +51,7 @@ protected:
 };
 
 auto RecordingMultiStopwatchTest::NumStopwatchesVariants =
-   std::vector<usize>{1, 16, 256};
+   std::vector<usize>{0, 1, 16, 256};
 auto RecordingMultiStopwatchTest::Names = std::vector<std::string>(1000);
 auto RecordingMultiStopwatchTest::StopwatchesVariants =
    std::vector<std::optional<RecordingMultiStopwatch>>(

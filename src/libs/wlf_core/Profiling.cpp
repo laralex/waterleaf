@@ -43,11 +43,12 @@ wlf::u64 Stopwatch::SavedElapsedMs() const noexcept {
    return std::chrono::duration_cast<duration_milli>(m_SavedElapsed).count();
 }
 
-Stopwatch& RecordingStopwatch::InnerStopwatch() noexcept {
+NonAssignableWrap<Stopwatch>& RecordingStopwatch::InnerStopwatch() noexcept {
    return m_Stopwatch;
 }
 
-const Stopwatch& RecordingStopwatch::InnerStopwatch() const noexcept {
+const NonAssignableWrap<Stopwatch>&
+RecordingStopwatch::InnerStopwatch() const noexcept {
    return m_Stopwatch;
 }
 
@@ -194,11 +195,13 @@ MultiStopwatch::SavedElapsedMsOf(usize key) const noexcept {
    return std::make_optional(m_Stopwatches[key].SavedElapsedMs());
 }
 
-MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() noexcept {
+NonAssignableWrap<MultiStopwatch>&
+RecordingMultiStopwatch::InnerStopwatch() noexcept {
    return m_MultiStopwatch;
 }
 
-const MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() const noexcept {
+const NonAssignableWrap<MultiStopwatch>&
+RecordingMultiStopwatch::InnerStopwatch() const noexcept {
    return m_MultiStopwatch;
 }
 
