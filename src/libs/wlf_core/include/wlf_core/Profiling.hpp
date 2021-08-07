@@ -75,22 +75,28 @@ public:
                                Stopwatch&& stopwatch) noexcept
          : INonCopyable()
          , m_Stopwatch(std::move(stopwatch))
-         , m_Records(recordsCapacity) {}
+         , m_Records(recordsCapacity)
+         , m_RecordsEverSaved(0)
+         , m_RecordsIt(0) {
+      m_Records.shrink_to_fit();
+   }
 
    Stopwatch& InnerStopwatch() noexcept;
    const Stopwatch& InnerStopwatch() const noexcept;
 
    void RecordState() noexcept;
    void ClearRecords() noexcept;
+
+   usize RecordsCapacity() const noexcept;
    bool IsRecordAvailable(usize recordingOffset) const noexcept;
    std::optional<wlf::u64>
    RecordedElapsedUs(usize recordingOffset) const noexcept;
 
 private:
-   usize m_RecordsEverSaved = 0;
    Stopwatch m_Stopwatch;
    std::vector<wlf::u64> m_Records;
-   usize m_RecordsIt = 0;
+   usize m_RecordsEverSaved;
+   usize m_RecordsIt;
 };
 
 class ENGINE_API MultiStopwatch;
@@ -157,18 +163,21 @@ private:
 
 class RecordingMultiStopwatch final : public INonCopyable {
 public:
-   explicit RecordingMultiStopwatch(usize nHistoricalStates,
+   explicit RecordingMultiStopwatch(usize recordsCapacity,
                                     MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
-         , m_CapacityOfRecords(nHistoricalStates)
-         , m_Records(nHistoricalStates * stopwatches.StopwatchesNumber())
-         , m_MultiStopwatch(std::move(stopwatches)) {}
+         , m_RecordsCapacity(recordsCapacity)
+         , m_Records(recordsCapacity * stopwatches.StopwatchesNumber())
+         , m_MultiStopwatch(std::move(stopwatches)) {
+      m_Records.shrink_to_fit();
+   }
 
    MultiStopwatch& InnerStopwatch() noexcept;
    const MultiStopwatch& InnerStopwatch() const noexcept;
    void RecordState() noexcept;
    void ClearRecords() noexcept;
 
+   usize RecordsCapacity() const noexcept;
    bool IsKeyValid(usize key) const noexcept;
    bool IsRecordAvailable(usize stateOffset) const noexcept;
 
@@ -176,7 +185,7 @@ public:
    RecordedElapsedUsOf(usize key, usize stateOffset) const noexcept;
 
 private:
-   usize m_CapacityOfRecords;
+   usize m_RecordsCapacity;
    usize m_RecordsEverSaved = 0;
    std::vector<wlf::u64> m_Records;
    usize m_RecordsIt = 0;

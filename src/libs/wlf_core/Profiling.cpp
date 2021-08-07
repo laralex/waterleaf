@@ -52,15 +52,19 @@ const Stopwatch& RecordingStopwatch::InnerStopwatch() const noexcept {
 }
 
 void RecordingStopwatch::RecordState() noexcept {
-   m_Records[m_RecordsIt] = m_Stopwatch.SavedElapsedUs();
    ++m_RecordsIt;
    if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
+   m_Records[m_RecordsIt] = m_Stopwatch.SavedElapsedUs();
    ++m_RecordsEverSaved;
 }
 
-void RecordingMultiStopwatch::ClearRecords() noexcept {
+void RecordingStopwatch::ClearRecords() noexcept {
    m_RecordsIt        = 0;
    m_RecordsEverSaved = 0;
+}
+
+usize RecordingStopwatch::RecordsCapacity() const noexcept {
+   return m_Records.size();
 }
 
 bool RecordingStopwatch::IsRecordAvailable(usize recordOffset) const noexcept {
@@ -69,15 +73,13 @@ bool RecordingStopwatch::IsRecordAvailable(usize recordOffset) const noexcept {
 
 std::optional<wlf::u64>
 RecordingStopwatch::RecordedElapsedUs(usize recordOffset) const noexcept {
-   if(recordOffset == 0) {
-      return std::make_optional(m_Stopwatch.SavedElapsedUs());
-   }
    if(!IsRecordAvailable(recordOffset)) { return std::nullopt; }
 
    if(m_RecordsIt >= recordOffset) {
       return std::make_optional(m_Records[m_RecordsIt - recordOffset]);
    }
-   return std::make_optional(m_Records.rbegin()[recordOffset - m_RecordsIt]);
+   return std::make_optional(
+      m_Records[m_Records.size() - recordOffset + m_RecordsIt]);
 }
 
 bool MultiStopwatchBuilder::IsComplete() const noexcept {
@@ -209,14 +211,22 @@ void RecordingMultiStopwatch::RecordState() noexcept {
    ++m_RecordsEverSaved;
 }
 
+usize RecordingMultiStopwatch::RecordsCapacity() const noexcept {
+   return m_RecordsCapacity;
+}
+
+void RecordingMultiStopwatch::ClearRecords() noexcept {
+   m_RecordsIt        = 0;
+   m_RecordsEverSaved = 0;
+}
+
 bool RecordingMultiStopwatch::IsKeyValid(usize key) const noexcept {
    return m_MultiStopwatch.IsKeyValid(key);
 }
 
 bool RecordingMultiStopwatch::IsRecordAvailable(
    usize recordOffset) const noexcept {
-   return recordOffset < m_CapacityOfRecords
-          && recordOffset < m_RecordsEverSaved;
+   return recordOffset < m_RecordsCapacity && recordOffset < m_RecordsEverSaved;
 }
 
 std::optional<wlf::u64>
