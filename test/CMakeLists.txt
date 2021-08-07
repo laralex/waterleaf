@@ -54,11 +54,11 @@ endfunction()
 make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS 
    FunctionProfilingTest.cpp
    StopwatchTest.cpp
-   BufferingStopwatchTest.cpp
+   RecordingStopwatchTest.cpp
    MultiStopwatchTest.cpp
-   BufferingMultiStopwatchTest.cpp)
+   RecordingMultiStopwatchTest.cpp)
 
-make_test(dev_test "wlf_render" "" MultiStopwatchTest.cpp)
+make_test(dev_test "wlf_render" "" RecordingStopwatchTest.cpp)
 
 #make_test(aux_tests "wlf_render" WLF_AUX_TESTS)
 

@@ -43,43 +43,41 @@ wlf::u64 Stopwatch::SavedElapsedMs() const noexcept {
    return std::chrono::duration_cast<duration_milli>(m_SavedElapsed).count();
 }
 
-Stopwatch& BufferedStopwatch::InnerStopwatch() noexcept {
+Stopwatch& RecordingStopwatch::InnerStopwatch() noexcept {
    return m_Stopwatch;
 }
 
-const Stopwatch& BufferedStopwatch::InnerStopwatch() const noexcept {
+const Stopwatch& RecordingStopwatch::InnerStopwatch() const noexcept {
    return m_Stopwatch;
 }
 
-void BufferedStopwatch::PushStateToHistory() noexcept {
-   m_History[m_HistoryIt] = m_Stopwatch.SavedElapsedUs();
-   ++m_HistoryIt;
-   if(m_HistoryIt == m_History.size()) { m_HistoryIt = 0; }
-   ++m_HistoricalStatesEverSaved;
+void RecordingStopwatch::RecordState() noexcept {
+   m_Records[m_RecordsIt] = m_Stopwatch.SavedElapsedUs();
+   ++m_RecordsIt;
+   if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
+   ++m_RecordsEverSaved;
 }
 
-void BufferedMultiStopwatch::ClearHistory() noexcept {
-   m_HistoryIt                 = 0;
-   m_HistoricalStatesEverSaved = 0;
+void RecordingMultiStopwatch::ClearRecords() noexcept {
+   m_RecordsIt        = 0;
+   m_RecordsEverSaved = 0;
 }
 
-bool BufferedStopwatch::IsStateOffsetAvailable(
-   usize stateOffset) const noexcept {
-   return stateOffset < m_History.size()
-          && stateOffset < m_HistoricalStatesEverSaved;
+bool RecordingStopwatch::IsRecordAvailable(usize recordOffset) const noexcept {
+   return recordOffset < m_Records.size() && recordOffset < m_RecordsEverSaved;
 }
 
 std::optional<wlf::u64>
-BufferedStopwatch::HistoricalElapsedUs(usize stateOffset) const noexcept {
-   if(stateOffset == 0) {
+RecordingStopwatch::RecordedElapsedUs(usize recordOffset) const noexcept {
+   if(recordOffset == 0) {
       return std::make_optional(m_Stopwatch.SavedElapsedUs());
    }
-   if(!IsStateOffsetAvailable(stateOffset)) { return std::nullopt; }
+   if(!IsRecordAvailable(recordOffset)) { return std::nullopt; }
 
-   if(m_HistoryIt >= stateOffset) {
-      return std::make_optional(m_History[m_HistoryIt - stateOffset]);
+   if(m_RecordsIt >= recordOffset) {
+      return std::make_optional(m_Records[m_RecordsIt - recordOffset]);
    }
-   return std::make_optional(m_History.rbegin()[stateOffset - m_HistoryIt]);
+   return std::make_optional(m_Records.rbegin()[recordOffset - m_RecordsIt]);
 }
 
 bool MultiStopwatchBuilder::IsComplete() const noexcept {
@@ -125,7 +123,7 @@ MultiStopwatch::BeginningOf(usize key) const noexcept {
 }
 
 bool MultiStopwatch::SetBeginningOf(usize key,
-                                        hires_timepoint timePoint) noexcept {
+                                    hires_timepoint timePoint) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].SetBeginning(timePoint);
@@ -194,47 +192,46 @@ MultiStopwatch::SavedElapsedMsOf(usize key) const noexcept {
    return std::make_optional(m_Stopwatches[key].SavedElapsedMs());
 }
 
-MultiStopwatch& BufferedMultiStopwatch::InnerStopwatch() noexcept {
+MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() noexcept {
    return m_MultiStopwatch;
 }
 
-const MultiStopwatch& BufferedMultiStopwatch::InnerStopwatch() const noexcept {
+const MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() const noexcept {
    return m_MultiStopwatch;
 }
 
-void BufferedMultiStopwatch::PushStateToHistory() noexcept {
+void RecordingMultiStopwatch::RecordState() noexcept {
    for(usize key = 0; key < m_MultiStopwatch.StopwatchesNumber(); ++key) {
-      m_History[m_HistoryIt] = *m_MultiStopwatch.SavedElapsedUsOf(key);
-      ++m_HistoryIt;
+      m_Records[m_RecordsIt] = *m_MultiStopwatch.SavedElapsedUsOf(key);
+      ++m_RecordsIt;
    }
-   if(m_HistoryIt == m_History.size()) { m_HistoryIt = 0; }
-   ++m_HistoricalStatesEverSaved;
+   if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
+   ++m_RecordsEverSaved;
 }
 
-bool BufferedMultiStopwatch::IsKeyValid(usize key) const noexcept {
+bool RecordingMultiStopwatch::IsKeyValid(usize key) const noexcept {
    return m_MultiStopwatch.IsKeyValid(key);
 }
 
-bool BufferedMultiStopwatch::IsStateOffsetAvailable(
-   usize stateOffset) const noexcept {
-   return stateOffset < m_HistoricalStatesCapacity
-          && stateOffset < m_HistoricalStatesEverSaved;
+bool RecordingMultiStopwatch::IsRecordAvailable(
+   usize recordOffset) const noexcept {
+   return recordOffset < m_CapacityOfRecords
+          && recordOffset < m_RecordsEverSaved;
 }
 
-std::optional<wlf::u64> BufferedMultiStopwatch::HistoricalElapsedUsOf(
-   usize key,
-   usize stateOffset) const noexcept {
-   if(!m_MultiStopwatch.IsKeyValid(key)
-      || !IsStateOffsetAvailable(stateOffset)) {
+std::optional<wlf::u64>
+RecordingMultiStopwatch::RecordedElapsedUsOf(usize key,
+                                             usize stateOffset) const noexcept {
+   if(!m_MultiStopwatch.IsKeyValid(key) || !IsRecordAvailable(stateOffset)) {
       return std::nullopt;
    }
    if(stateOffset == 0) { return m_MultiStopwatch.SavedElapsedUsOf(key); }
 
    auto timingOffset = m_MultiStopwatch.StopwatchesNumber() * stateOffset - key;
-   if(m_HistoryIt >= timingOffset) {
-      return std::make_optional(m_History[m_HistoryIt - timingOffset]);
+   if(m_RecordsIt >= timingOffset) {
+      return std::make_optional(m_Records[m_RecordsIt - timingOffset]);
    }
-   return std::make_optional(m_History.rbegin()[timingOffset - m_HistoryIt]);
+   return std::make_optional(m_Records.rbegin()[timingOffset - m_RecordsIt]);
 }
 
 wlf::usize FrameProfiler::StopwatchesNumber() const noexcept {
@@ -249,14 +246,14 @@ bool FrameProfiler::IsKeyValid(usize key) const noexcept {
 }
 
 bool FrameProfiler::IsFrameDataAccessible(usize numFramesBack) const noexcept {
-   return m_FrameTimeStopwatch.IsStateOffsetAvailable(numFramesBack - 1);
+   return m_FrameTimeStopwatch.IsRecordAvailable(numFramesBack - 1);
 }
 
 void FrameProfiler::StartNewFrame() noexcept {
-   m_ProfilePartsMultiStopwatch.PushStateToHistory();
+   m_ProfilePartsMultiStopwatch.RecordState();
    m_ProfilePartsMultiStopwatch.InnerStopwatch().ClearElapsedOfAll();
    m_FrameTimeStopwatch.InnerStopwatch().SaveElapsed(/*resetBeginning*/ true);
-   m_FrameTimeStopwatch.PushStateToHistory();
+   m_FrameTimeStopwatch.RecordState();
 }
 
 bool FrameProfiler::BeginMeasureOf(usize key) noexcept {
@@ -276,12 +273,12 @@ std::optional<wlf::u64>
 FrameProfiler::HistoricalTimingOf(usize key,
                                   usize numFramesBack) const noexcept {
    if(numFramesBack == 0) return std::nullopt;
-   return m_ProfilePartsMultiStopwatch.HistoricalElapsedUsOf(key,
-                                                             numFramesBack - 1);
+   return m_ProfilePartsMultiStopwatch.RecordedElapsedUsOf(key,
+                                                           numFramesBack - 1);
 }
 
 std::optional<wlf::u64>
 FrameProfiler::HistoricalFrametime(usize numFramesBack) const noexcept {
    if(numFramesBack == 0) return std::nullopt;
-   return m_FrameTimeStopwatch.HistoricalElapsedUs(numFramesBack - 1);
+   return m_FrameTimeStopwatch.RecordedElapsedUs(numFramesBack - 1);
 }

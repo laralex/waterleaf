@@ -69,27 +69,27 @@ private:
    hires_duration m_SavedElapsed;
 };
 
-class ENGINE_API BufferedStopwatch final : public INonCopyable {
+class ENGINE_API RecordingStopwatch final : public INonCopyable {
 public:
-   BufferedStopwatch(usize nHistoricalStates, Stopwatch&& stopwatch) noexcept
+   RecordingStopwatch(usize recordsCapacity, Stopwatch&& stopwatch) noexcept
          : INonCopyable()
          , m_Stopwatch(std::move(stopwatch))
-         , m_History(nHistoricalStates) {}
+         , m_Records(recordsCapacity) {}
 
    Stopwatch& InnerStopwatch() noexcept;
    const Stopwatch& InnerStopwatch() const noexcept;
-   void PushStateToHistory() noexcept;
-   void ClearHistory() noexcept;
-   bool IsStateOffsetAvailable(usize stateOffset) const noexcept;
 
+   void RecordState() noexcept;
+   void ClearRecords() noexcept;
+   bool IsRecordAvailable(usize recordingOffset) const noexcept;
    std::optional<wlf::u64>
-   HistoricalElapsedUs(usize stateOffset) const noexcept;
+   RecordedElapsedUs(usize recordingOffset) const noexcept;
 
 private:
-   usize m_HistoricalStatesEverSaved = 0;
+   usize m_RecordsEverSaved = 0;
    Stopwatch m_Stopwatch;
-   std::vector<wlf::u64> m_History;
-   usize m_HistoryIt = 0;
+   std::vector<wlf::u64> m_Records;
+   usize m_RecordsIt = 0;
 };
 
 class ENGINE_API MultiStopwatch;
@@ -154,31 +154,31 @@ private:
    std::vector<std::optional<std::string>> m_Names;
 };
 
-class BufferedMultiStopwatch final : public INonCopyable {
+class RecordingMultiStopwatch final : public INonCopyable {
 public:
-   BufferedMultiStopwatch(usize nHistoricalStates,
-                          MultiStopwatch&& stopwatches) noexcept
+   RecordingMultiStopwatch(usize nHistoricalStates,
+                           MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
-         , m_HistoricalStatesCapacity(nHistoricalStates)
-         , m_History(nHistoricalStates * stopwatches.StopwatchesNumber())
+         , m_CapacityOfRecords(nHistoricalStates)
+         , m_Records(nHistoricalStates * stopwatches.StopwatchesNumber())
          , m_MultiStopwatch(std::move(stopwatches)) {}
 
    MultiStopwatch& InnerStopwatch() noexcept;
    const MultiStopwatch& InnerStopwatch() const noexcept;
-   void PushStateToHistory() noexcept;
-   void ClearHistory() noexcept;
+   void RecordState() noexcept;
+   void ClearRecords() noexcept;
 
    bool IsKeyValid(usize key) const noexcept;
-   bool IsStateOffsetAvailable(usize stateOffset) const noexcept;
+   bool IsRecordAvailable(usize stateOffset) const noexcept;
 
    std::optional<wlf::u64>
-   HistoricalElapsedUsOf(usize key, usize stateOffset) const noexcept;
+   RecordedElapsedUsOf(usize key, usize stateOffset) const noexcept;
 
 private:
-   usize m_HistoricalStatesCapacity;
-   usize m_HistoricalStatesEverSaved = 0;
-   std::vector<wlf::u64> m_History;
-   usize m_HistoryIt = 0;
+   usize m_CapacityOfRecords;
+   usize m_RecordsEverSaved = 0;
+   std::vector<wlf::u64> m_Records;
+   usize m_RecordsIt = 0;
    MultiStopwatch m_MultiStopwatch;
 };
 
@@ -207,8 +207,8 @@ public:
 
 private:
    usize m_NumFramesBuffered;
-   BufferedMultiStopwatch m_ProfilePartsMultiStopwatch;
-   BufferedStopwatch m_FrameTimeStopwatch;
+   RecordingMultiStopwatch m_ProfilePartsMultiStopwatch;
+   RecordingStopwatch m_FrameTimeStopwatch;
 };
 
 } // namespace wlf::utils
