@@ -1,81 +1,96 @@
 #include "wlf_core/Prelude.hpp"
+#include "gtest/gtest.h"
 
 #include <chrono>
-#include <gtest/gtest.h>
 #include <thread>
 
 
 using namespace wlf;
 using namespace wlf::utils;
 
+template<typename T>
 class StopwatchTest : public ::testing::Test {
+public:
+   void SetUp() override {
+      if constexpr(std::is_same_v<T, Stopwatch>) {
+         m_Stopwatch = std::make_optional<T>();
+      } else if constexpr(std::is_same_v<T, RecordingStopwatch>) {
+         usize nRecordsCapacity = 10;
+         m_Stopwatch = std::make_optional<T>(nRecordsCapacity, Stopwatch{});
+      }
+   }
 
-protected:
    void MeasureDummyWork(wlf::u64 sleepMs) {
-      m_Stopwatch.SetBeginning();
+      m_Stopwatch->SetBeginning();
       std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
-      m_Stopwatch.SaveElapsed();
+      m_Stopwatch->SaveElapsed();
    }
 
    void MeasureFromTimepointTillNow(hires_timepoint timepoint) {
-      m_Stopwatch.SetBeginning(timepoint);
-      m_Stopwatch.SaveElapsed();
+      m_Stopwatch->SetBeginning(timepoint);
+      m_Stopwatch->SaveElapsed();
    }
-   Stopwatch m_Stopwatch;
+   std::optional<T> m_Stopwatch;
 };
 
-TEST_F(StopwatchTest, RealisticResults) {
+using AllStopwatchTypes = ::testing::Types<Stopwatch, RecordingStopwatch>;
+TYPED_TEST_SUITE(StopwatchTest, AllStopwatchTypes);
+
+
+TYPED_TEST(StopwatchTest, RealisticResults) {
    u64 baseSleepMs = 3, sleepNoiseMs = 50, nRepeats = 3;
    for(u64 i = 1; i <= nRepeats; ++i) {
       u64 sleepMs = i * baseSleepMs;
-      MeasureDummyWork(sleepMs);
-      EXPECT_GE(m_Stopwatch.SavedElapsedMs(), sleepMs)
+      this->MeasureDummyWork(sleepMs);
+      EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), sleepMs)
          << "Measurement can't be smaller than work time";
-      EXPECT_LE(m_Stopwatch.SavedElapsedMs(), sleepMs + sleepNoiseMs)
+      EXPECT_LE(this->m_Stopwatch->SavedElapsedMs(), sleepMs + sleepNoiseMs)
          << "Measurement can't be much bigger than work time";
    }
 }
 
-TEST_F(StopwatchTest, RealisticResultsBigTimespan) {
+TYPED_TEST(StopwatchTest, RealisticResultsBigTimespan) {
    u64 baseYears = 10, nRepeats = 5, sleepNoiseMs = 50;
    for(u64 i = 1; i < nRepeats; ++i) {
       u64 hoursInPast      = 365 * 24 * i * baseYears;
       auto timePointInPast = std::chrono::high_resolution_clock::now()
                              - std::chrono::hours(hoursInPast);
       u64 expectedElapsedMs = hoursInPast * 60 * 60 * 1000;
-      MeasureFromTimepointTillNow(timePointInPast);
-      EXPECT_GE(m_Stopwatch.SavedElapsedMs(), expectedElapsedMs)
+      this->MeasureFromTimepointTillNow(timePointInPast);
+      EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), expectedElapsedMs)
          << "Measurement acn't be smaller than work time";
-      EXPECT_LE(m_Stopwatch.SavedElapsedMs(), expectedElapsedMs + sleepNoiseMs)
+      EXPECT_LE(this->m_Stopwatch->SavedElapsedMs(),
+                expectedElapsedMs + sleepNoiseMs)
          << "Measurement can't be much bigger than work time";
    }
 }
 
-TEST_F(StopwatchTest, SetBeginningInFarPast) {
+TYPED_TEST(StopwatchTest, SetBeginningInFarPast) {
    u64 nRepeats = 5;
    for(u64 yearsInPast = 1; yearsInPast < nRepeats; ++yearsInPast) {
       u64 hoursInPast      = 365 * 24 * yearsInPast;
       auto timePointInPast = std::chrono::high_resolution_clock::now()
                              - std::chrono::hours(hoursInPast);
-      m_Stopwatch.SetBeginning(timePointInPast);
-      EXPECT_EQ(m_Stopwatch.Beginning(), timePointInPast)
+      this->m_Stopwatch->SetBeginning(timePointInPast);
+      EXPECT_EQ(this->m_Stopwatch->Beginning(), timePointInPast)
          << "Beginning should change to what it's intended to";
    }
 }
 
 
-TEST_F(StopwatchTest, SetBeginningInFuture) {
+TYPED_TEST(StopwatchTest, SetBeginningInFuture) {
    u64 allowedNoiseUs = 100, nRepeats = 5, baseYears = 10;
    for(int i = 1; i <= nRepeats; ++i) {
       usize futureOffsetMs   = 2;
       auto timePointInFuture = std::chrono::high_resolution_clock::now()
                                + std::chrono::milliseconds(futureOffsetMs);
-      m_Stopwatch.SetBeginning(timePointInFuture);
-      EXPECT_LE(m_Stopwatch.Beginning(),
+      this->m_Stopwatch->SetBeginning(timePointInFuture);
+      EXPECT_LE(this->m_Stopwatch->Beginning(),
                 std::chrono::high_resolution_clock::now())
          << "Near future: setting beginning should fallback to now()";
-      m_Stopwatch.SaveElapsed();
-      EXPECT_LE(m_Stopwatch.SavedElapsedUs(), static_cast<u64>(allowedNoiseUs))
+      this->m_Stopwatch->SaveElapsed();
+      EXPECT_LE(this->m_Stopwatch->SavedElapsedUs(),
+                static_cast<u64>(allowedNoiseUs))
          << "Near future: elapsed time should be about 0";
    }
 
@@ -83,26 +98,27 @@ TEST_F(StopwatchTest, SetBeginningInFuture) {
       usize futureOffsetHours = 24 * 365 * i * baseYears;
       auto timePointInFuture  = std::chrono::high_resolution_clock::now()
                                + std::chrono::hours(futureOffsetHours);
-      m_Stopwatch.SetBeginning(timePointInFuture);
-      EXPECT_LE(m_Stopwatch.Beginning(),
+      this->m_Stopwatch->SetBeginning(timePointInFuture);
+      EXPECT_LE(this->m_Stopwatch->Beginning(),
                 std::chrono::high_resolution_clock::now())
          << "Far future: setting beginning should fallback to now()"
          << " i = " << i;
-      m_Stopwatch.SaveElapsed();
-      EXPECT_LE(m_Stopwatch.SavedElapsedUs(), static_cast<u64>(allowedNoiseUs))
+      this->m_Stopwatch->SaveElapsed();
+      EXPECT_LE(this->m_Stopwatch->SavedElapsedUs(),
+                static_cast<u64>(allowedNoiseUs))
          << "Far future: elapsed time should be about 0."
          << " Thus elapsed should be about zero. i = " << i;
    }
 }
 
-TEST_F(StopwatchTest, ElapsedTimingsIdentical) {
+TYPED_TEST(StopwatchTest, ElapsedTimingsIdentical) {
    u64 baseSleepMs = 3, nRepeats = 3;
    for(u64 i = 1; i <= nRepeats; ++i) {
-      MeasureDummyWork(baseSleepMs * i);
+      this->MeasureDummyWork(baseSleepMs * i);
 
-      auto elapsed   = m_Stopwatch.SavedElapsed();
-      auto elapsedMs = m_Stopwatch.SavedElapsedMs();
-      auto elapsedUs = m_Stopwatch.SavedElapsedUs();
+      auto elapsed   = this->m_Stopwatch->SavedElapsed();
+      auto elapsedMs = this->m_Stopwatch->SavedElapsedMs();
+      auto elapsedUs = this->m_Stopwatch->SavedElapsedUs();
 
       auto convertedElapsedMs =
          std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
@@ -119,93 +135,94 @@ TEST_F(StopwatchTest, ElapsedTimingsIdentical) {
    }
 }
 
-TEST_F(StopwatchTest, ClearElapsed) {
+TYPED_TEST(StopwatchTest, ClearElapsed) {
    u64 nRepeats = 5, baseOffsetMs = 3;
    for(u64 i = 0; i < nRepeats; ++i) {
       auto timePoint = std::chrono::high_resolution_clock::now()
                        - std::chrono::milliseconds(i * baseOffsetMs);
-      m_Stopwatch.SetBeginning(timePoint);
-      m_Stopwatch.SaveElapsed();
-      EXPECT_GE(m_Stopwatch.SavedElapsedMs(), i * baseOffsetMs)
+      this->m_Stopwatch->SetBeginning(timePoint);
+      this->m_Stopwatch->SaveElapsed();
+      EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), i * baseOffsetMs)
          << "SaveElapsed is broken, unrealistic result";
 
-      m_Stopwatch.ClearElapsed();
-      EXPECT_EQ(m_Stopwatch.SavedElapsedUs(), 0)
+      this->m_Stopwatch->ClearElapsed();
+      EXPECT_EQ(this->m_Stopwatch->SavedElapsedUs(), 0)
          << "State should be cleared after call";
    }
 }
 
-TEST_F(StopwatchTest, AddSaveElapsed) {
-   u64 nRepeats = 5, baseOffsetMs = 1000, allowedNoiseMs = 3,
-       nAdditions = 3;
+TYPED_TEST(StopwatchTest, AddSaveElapsed) {
+   u64 nRepeats = 5, baseOffsetMs = 1000, allowedNoiseMs = 3, nAdditions = 3;
 
    for(u64 i = 0; i < nRepeats; ++i) {
       auto timePoint = std::chrono::high_resolution_clock::now()
                        - std::chrono::milliseconds(i * baseOffsetMs);
-      m_Stopwatch.SetBeginning(timePoint);
+      this->m_Stopwatch->SetBeginning(timePoint);
       u64 sumElapsedMs = 0;
       for(u64 addition = 0; addition < nAdditions; ++addition) {
          auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::high_resolution_clock::now()
-                           - m_Stopwatch.Beginning())
+                           - this->m_Stopwatch->Beginning())
                            .count();
-         m_Stopwatch.AddSaveElapsed();
+         this->m_Stopwatch->AddSaveElapsed();
          sumElapsedMs += static_cast<u64>(elapsed);
-         EXPECT_GE(m_Stopwatch.SavedElapsedMs(), sumElapsedMs)
+         EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), sumElapsedMs)
             << "Elapsed time from beginning should accumulate."
             << " i=" << i << " addition=" << addition;
-         EXPECT_LE(m_Stopwatch.SavedElapsedMs(), sumElapsedMs + allowedNoiseMs)
+         EXPECT_LE(this->m_Stopwatch->SavedElapsedMs(),
+                   sumElapsedMs + allowedNoiseMs)
             << "Cumulative elapsed time shouldn't be larger than work."
             << " i=" << i << " addition=" << addition;
       }
-      m_Stopwatch.ClearElapsed();
+      this->m_Stopwatch->ClearElapsed();
    }
 }
 
-TEST_F(StopwatchTest, SaveElapsedResetBeginning) {
+TYPED_TEST(StopwatchTest, SaveElapsedResetBeginning) {
    u64 nRepeats = 5, baseOffsetMs = 3;
    auto allowedNoiseDuration = std::chrono::milliseconds(3);
    for(u64 i = 0; i < nRepeats; ++i) {
       auto timePoint = std::chrono::high_resolution_clock::now()
                        - std::chrono::milliseconds(i * baseOffsetMs);
-      m_Stopwatch.SetBeginning(timePoint);
+      this->m_Stopwatch->SetBeginning(timePoint);
       auto now = std::chrono::high_resolution_clock::now();
-      m_Stopwatch.SaveElapsed(/*resetBeginning*/ true);
+      this->m_Stopwatch->SaveElapsed(/*resetBeginning*/ true);
 
-      EXPECT_GE(m_Stopwatch.SavedElapsedMs(), i * baseOffsetMs)
+      EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), i * baseOffsetMs)
          << "Test is broken, SaveElapsed unrealistic result";
 
-      EXPECT_GE(m_Stopwatch.Beginning(), now)
+      EXPECT_GE(this->m_Stopwatch->Beginning(), now)
          << "Beginning time point should've been reset to now(). i=" << i;
-      EXPECT_LE(m_Stopwatch.Beginning(), now + allowedNoiseDuration)
+      EXPECT_LE(this->m_Stopwatch->Beginning(), now + allowedNoiseDuration)
          << "Beginning time point should've been reset to now(). i=" << i;
    }
 }
-TEST_F(StopwatchTest, AddSaveElapsedResetBeginning) {
+TYPED_TEST(StopwatchTest, AddSaveElapsedResetBeginning) {
    u64 nRepeats = 20, nAdditions = 5, baseOffsetMs = 3, allowedNoiseMs = 3;
    auto allowedNoiseDuration = std::chrono::milliseconds(allowedNoiseMs);
    for(u64 i = 0; i < nRepeats; ++i) {
       auto timePoint = std::chrono::high_resolution_clock::now()
                        - std::chrono::milliseconds(i * baseOffsetMs);
-      m_Stopwatch.SetBeginning(timePoint);
+      this->m_Stopwatch->SetBeginning(timePoint);
       u64 sumElapsedMs = 0;
       for(u64 addition = 0; addition < nAdditions; ++addition) {
-         auto now = std::chrono::high_resolution_clock::now();
+         auto now       = std::chrono::high_resolution_clock::now();
          auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                           now - m_Stopwatch.Beginning())
-                           .count();
-         m_Stopwatch.AddSaveElapsed(/*resetBeginning*/ true);
+                             now - this->m_Stopwatch->Beginning())
+                             .count();
+         this->m_Stopwatch->AddSaveElapsed(/*resetBeginning*/ true);
          sumElapsedMs += static_cast<u64>(elapsedMs);
-         EXPECT_GE(m_Stopwatch.SavedElapsedMs(), sumElapsedMs)
+         EXPECT_GE(this->m_Stopwatch->SavedElapsedMs(), sumElapsedMs)
             << "Test is broken, AddSaveElapsed unrealistic result. i=" << i;
-         EXPECT_LE(m_Stopwatch.SavedElapsedMs(), sumElapsedMs + allowedNoiseMs)
+         EXPECT_LE(this->m_Stopwatch->SavedElapsedMs(),
+                   sumElapsedMs + allowedNoiseMs)
             << "Test is broken, AddSaveElapsed unrealistic result i=" << i;
 
-         EXPECT_GE(m_Stopwatch.Beginning(), now)
+         EXPECT_GE(this->m_Stopwatch->Beginning(), now)
             << "Beginning time point should've been reset to now(). i=" << i;
-         EXPECT_LE(m_Stopwatch.Beginning(), now + allowedNoiseDuration)
+         EXPECT_LE(this->m_Stopwatch->Beginning(), now + allowedNoiseDuration)
             << "Beginning time point should've been reset to now(). i=" << i;
       }
-      m_Stopwatch.ClearElapsed();
+      this->m_Stopwatch->ClearElapsed();
    }
 }

@@ -7,81 +7,7 @@ using namespace wlf::utils;
 using duration_milli = std::chrono::duration<wlf::u64, std::milli>;
 using duration_micro = std::chrono::duration<wlf::u64, std::micro>;
 
-hires_timepoint Stopwatch::Beginning() const noexcept {
-   return m_BeginningTimePoint;
-}
 
-void Stopwatch::SetBeginning(hires_timepoint timePoint) noexcept {
-   m_BeginningTimePoint = std::min(timePoint, hires_clock::now());
-}
-
-void Stopwatch::SaveElapsed(bool resetBeginning) noexcept {
-   auto now       = hires_clock::now();
-   m_SavedElapsed = now - m_BeginningTimePoint;
-   if(resetBeginning) { m_BeginningTimePoint = now; }
-}
-
-void Stopwatch::AddSaveElapsed(bool resetBeginning) noexcept {
-   auto now = hires_clock::now();
-   m_SavedElapsed += now - m_BeginningTimePoint;
-   if(resetBeginning) { m_BeginningTimePoint = now; }
-}
-
-void Stopwatch::ClearElapsed() noexcept {
-   m_SavedElapsed = std::chrono::nanoseconds{0};
-}
-
-hires_clock::duration Stopwatch::SavedElapsed() const noexcept {
-   return m_SavedElapsed;
-}
-
-wlf::u64 Stopwatch::SavedElapsedUs() const noexcept {
-   return std::chrono::duration_cast<duration_micro>(m_SavedElapsed).count();
-}
-
-wlf::u64 Stopwatch::SavedElapsedMs() const noexcept {
-   return std::chrono::duration_cast<duration_milli>(m_SavedElapsed).count();
-}
-
-NonAssignableWrap<Stopwatch>& RecordingStopwatch::InnerStopwatch() noexcept {
-   return m_Stopwatch;
-}
-
-const NonAssignableWrap<Stopwatch>&
-RecordingStopwatch::InnerStopwatch() const noexcept {
-   return m_Stopwatch;
-}
-
-void RecordingStopwatch::RecordState() noexcept {
-   ++m_RecordsIt;
-   if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
-   m_Records[m_RecordsIt] = m_Stopwatch.SavedElapsedUs();
-   ++m_RecordsEverSaved;
-}
-
-void RecordingStopwatch::ClearRecords() noexcept {
-   m_RecordsIt        = 0;
-   m_RecordsEverSaved = 0;
-}
-
-usize RecordingStopwatch::RecordsCapacity() const noexcept {
-   return m_Records.size();
-}
-
-bool RecordingStopwatch::IsRecordAvailable(usize recordOffset) const noexcept {
-   return recordOffset < m_Records.size() && recordOffset < m_RecordsEverSaved;
-}
-
-std::optional<wlf::u64>
-RecordingStopwatch::RecordedElapsedUs(usize recordOffset) const noexcept {
-   if(!IsRecordAvailable(recordOffset)) { return std::nullopt; }
-
-   if(m_RecordsIt >= recordOffset) {
-      return std::make_optional(m_Records[m_RecordsIt - recordOffset]);
-   }
-   return std::make_optional(
-      m_Records[m_Records.size() - recordOffset + m_RecordsIt]);
-}
 
 bool MultiStopwatchBuilder::IsComplete() const noexcept {
    return m_LeftToInitialize == 0;
@@ -195,13 +121,11 @@ MultiStopwatch::SavedElapsedMsOf(usize key) const noexcept {
    return std::make_optional(m_Stopwatches[key].SavedElapsedMs());
 }
 
-NonAssignableWrap<MultiStopwatch>&
-RecordingMultiStopwatch::InnerStopwatch() noexcept {
+MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() noexcept {
    return m_MultiStopwatch;
 }
 
-const NonAssignableWrap<MultiStopwatch>&
-RecordingMultiStopwatch::InnerStopwatch() const noexcept {
+const MultiStopwatch& RecordingMultiStopwatch::InnerStopwatch() const noexcept {
    return m_MultiStopwatch;
 }
 
@@ -265,7 +189,7 @@ bool FrameProfiler::IsFrameDataAccessible(usize numFramesBack) const noexcept {
 void FrameProfiler::StartNewFrame() noexcept {
    m_ProfilePartsMultiStopwatch.RecordState();
    m_ProfilePartsMultiStopwatch.InnerStopwatch().ClearElapsedOfAll();
-   m_FrameTimeStopwatch.InnerStopwatch().SaveElapsed(/*resetBeginning*/ true);
+   m_FrameTimeStopwatch.SaveElapsed(/*resetBeginning*/ true);
    m_FrameTimeStopwatch.RecordState();
 }
 

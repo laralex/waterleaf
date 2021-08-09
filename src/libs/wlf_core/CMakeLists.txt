@@ -9,4 +9,5 @@ make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
    "${WLF_STRICT_WARNING_FLAGS}" # flags
    "glm spdlog"                  # link against
    Assertion.cpp
-   Profiling.cpp)
+   Profiling.cpp
+   Stopwatch.cpp)

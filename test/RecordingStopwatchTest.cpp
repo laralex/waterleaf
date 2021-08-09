@@ -17,7 +17,7 @@ TEST(RecordingStopwatchTest, InnerStopwatch) {
       Stopwatch cloneStopwatch{innerStopwatch};
       RecordingStopwatch stopwatch{nRecordsCapacity, std::move(cloneStopwatch)};
       EXPECT_EQ(innerStopwatch.Beginning(),
-                stopwatch.InnerStopwatch().Beginning())
+                stopwatch.Beginning())
          << "Inner stopwatch should be what was given upon construction";
    }
 }
@@ -35,10 +35,10 @@ TEST(RecordingStopwatchTest, ReadingRecords) {
          auto offsetMs =
             std::chrono::milliseconds((repeat + recording + 1) * baseOffsetMs);
          auto timePoint = now - offsetMs;
-         stopwatch.InnerStopwatch().SetBeginning(timePoint);
-         stopwatch.InnerStopwatch().SaveElapsed();
+         stopwatch.SetBeginning(timePoint);
+         stopwatch.SaveElapsed();
          stopwatch.RecordState();
-         manualRecords[recording] = stopwatch.InnerStopwatch().SavedElapsedUs();
+         manualRecords[recording] = stopwatch.SavedElapsedUs();
          EXPECT_NE(manualRecords[recording], 0) << "Test is broken. No timing";
       }
 
@@ -80,9 +80,9 @@ TEST(RecordingStopwatchTest, ClearRecords) {
          auto offsetMs  = std::chrono::milliseconds(baseOffsetMs * (repeat + 1)
                                                    * (recording + 1));
          auto timePoint = now - offsetMs;
-         stopwatch.InnerStopwatch().SetBeginning(timePoint);
-         stopwatch.InnerStopwatch().SaveElapsed();
-         EXPECT_NE(stopwatch.InnerStopwatch().SavedElapsedUs(), 0)
+         stopwatch.SetBeginning(timePoint);
+         stopwatch.SaveElapsed();
+         EXPECT_NE(stopwatch.SavedElapsedUs(), 0)
             << "Test is broken. No timing";
          stopwatch.RecordState();
       }
@@ -114,7 +114,7 @@ TEST(RecordingStopwatchTest, RecordsCapacity) {
       }
    }
 }
-/* 
+/*
 TEST(RecordingStopwatchTest, UnassignableInternalStopwatch) {
    u64 nRepeats           = 20;
    usize nRecordsCapacity = 100;

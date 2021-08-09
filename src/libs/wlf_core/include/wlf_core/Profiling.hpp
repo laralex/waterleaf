@@ -1,5 +1,6 @@
 #pragma once
 #include "Defines.hpp"
+#include "Stopwatch.hpp"
 #include "UtilityInterfaces.hpp"
 #include "UtilityWrappers.hpp"
 
@@ -48,58 +49,6 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
    return ProfileRun<std::chrono::duration<wlf::u64, std::milli>>(
       std::forward<F>(function), std::forward<Args>(args)...);
 }
-
-class ENGINE_API Stopwatch {
-public:
-   explicit Stopwatch() noexcept
-         : m_BeginningTimePoint(hires_clock::now()), m_SavedElapsed() {}
-
-   hires_timepoint Beginning() const noexcept;
-   void
-   SetBeginning(hires_timepoint timePointInPast = hires_clock::now()) noexcept;
-
-   void SaveElapsed(bool resetBeginning = false) noexcept;
-   void AddSaveElapsed(bool resetBeginning = false) noexcept;
-   void ClearElapsed() noexcept;
-   hires_duration SavedElapsed() const noexcept;
-   wlf::u64 SavedElapsedUs() const noexcept;
-   wlf::u64 SavedElapsedMs() const noexcept;
-
-private:
-   hires_timepoint m_BeginningTimePoint;
-   hires_duration m_SavedElapsed;
-};
-
-class ENGINE_API RecordingStopwatch : public INonCopyable {
-public:
-   explicit RecordingStopwatch(usize recordsCapacity,
-                               Stopwatch&& stopwatch) noexcept
-         : INonCopyable()
-         , m_Stopwatch(std::move(stopwatch))
-         , m_Records(recordsCapacity)
-         , m_RecordsEverSaved(0)
-         , m_RecordsIt(0) {
-      m_Records.shrink_to_fit();
-   }
-
-   NonAssignableWrap<Stopwatch>& InnerStopwatch() noexcept;
-   const NonAssignableWrap<Stopwatch>&
-   InnerStopwatch() const noexcept;
-
-   void RecordState() noexcept;
-   void ClearRecords() noexcept;
-
-   usize RecordsCapacity() const noexcept;
-   bool IsRecordAvailable(usize recordingOffset) const noexcept;
-   std::optional<wlf::u64>
-   RecordedElapsedUs(usize recordingOffset) const noexcept;
-
-private:
-   NonAssignableWrap<Stopwatch> m_Stopwatch;
-   std::vector<wlf::u64> m_Records;
-   usize m_RecordsEverSaved;
-   usize m_RecordsIt;
-};
 
 class ENGINE_API MultiStopwatch;
 
@@ -174,8 +123,9 @@ public:
       m_Records.shrink_to_fit();
    }
 
-   NonAssignableWrap<MultiStopwatch>& InnerStopwatch() noexcept;
-   const NonAssignableWrap<MultiStopwatch>& InnerStopwatch() const noexcept;
+   MultiStopwatch& InnerStopwatch() noexcept;
+   const MultiStopwatch& InnerStopwatch() const noexcept;
+
    void RecordState() noexcept;
    void ClearRecords() noexcept;
 
@@ -191,7 +141,7 @@ private:
    usize m_RecordsEverSaved = 0;
    std::vector<wlf::u64> m_Records;
    usize m_RecordsIt = 0;
-   NonAssignableWrap<MultiStopwatch> m_MultiStopwatch;
+   MultiStopwatch m_MultiStopwatch;
 };
 
 class ENGINE_API FrameProfiler : public INonCopyable {

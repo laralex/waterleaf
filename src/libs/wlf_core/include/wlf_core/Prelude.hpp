@@ -5,5 +5,6 @@
 #include "Assertion.hpp"
 #include "Defines.hpp"
 #include "Profiling.hpp"
+#include "Stopwatch.hpp"
 #include "UtilityInterfaces.hpp"
 #include "UtilityWrappers.hpp"
