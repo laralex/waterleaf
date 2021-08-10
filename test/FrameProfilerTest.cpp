@@ -1,11 +1,9 @@
 #include "wlf_core/Profiling.hpp"
 
+#include "gtest/gtest.h"
 #include <chrono>
-#include <gtest/gtest.h>
 #include <optional>
-#include <spdlog/spdlog.h>
 #include <thread>
-
 
 
 using namespace wlf;
@@ -112,8 +110,8 @@ TEST_F(FrameProfilerTest, BufferingFramesMeasurements) {
          for(usize s = 0; s < N_STOPWATCHES; ++s) {
             EXPECT_FALSE(m_FrameProfiler->HistoricalTimingOf(s, i))
                << "Very old measurements should be gone for:"
-               << " currentFrame=" << currentFrame
-               << " nFramesBack=" << i << " stopwatchKey=" << s;
+               << " currentFrame=" << currentFrame << " nFramesBack=" << i
+               << " stopwatchKey=" << s;
          }
       }
    }

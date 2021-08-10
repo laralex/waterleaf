@@ -6,5 +6,6 @@
 #include "Defines.hpp"
 #include "Profiling.hpp"
 #include "Stopwatch.hpp"
+#include "MultiStopwatch.hpp"
 #include "UtilityInterfaces.hpp"
 #include "UtilityWrappers.hpp"

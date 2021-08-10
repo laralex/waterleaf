@@ -10,4 +10,5 @@ make_library(${PROJECT_NAME} ${WLF_LIBRARIES_TYPE}
    "glm spdlog"                  # link against
    Assertion.cpp
    Profiling.cpp
-   Stopwatch.cpp)
+   Stopwatch.cpp
+   MultiStopwatch.cpp)

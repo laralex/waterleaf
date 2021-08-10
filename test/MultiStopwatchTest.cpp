@@ -1,57 +1,75 @@
 #include "wlf_core/Profiling.hpp"
 
+#include "gtest/gtest.h"
 #include <chrono>
-#include <gtest/gtest.h>
 #include <string>
 #include <thread>
 #include <vector>
 
-
 using namespace wlf;
 using namespace wlf::utils;
 
-class MultiStopwatchTest : public ::testing::Test {
+class MultiStopwatchBuilderTest : public ::testing::Test {
 protected:
    static void SetUpTestSuite() {
       for(usize i = 0; i < Names.size(); ++i) {
          Names[i] = std::to_string(i * 1000);
       }
+   }
+   static std::vector<std::string> Names;
+   static std::vector<usize> NumStopwatchesVariants;
+};
+
+template<typename T>
+class MultiStopwatchTest : public MultiStopwatchBuilderTest {
+protected:
+   static void SetUpTestSuite() {
       for(usize i = 0; i < NumStopwatchesVariants.size(); ++i) {
          StopwatchesVariants[i] =
             ConstructMultiStopwatch(NumStopwatchesVariants[i]);
       }
    }
 
-   static std::optional<MultiStopwatch>
-   ConstructMultiStopwatch(usize nStopwatches) {
+   static std::optional<T> ConstructMultiStopwatch(usize nStopwatches) {
       auto builder = MultiStopwatchBuilder{nStopwatches};
       for(usize i = 0; i < nStopwatches; ++i) {
          builder.WithStopwatchName(i, std::string{Names[i]});
       }
-      return MultiStopwatch::FromBuilder(std::move(builder));
+      if constexpr(std::is_same_v<T, MultiStopwatch>) {
+         return T::FromBuilder(std::move(builder));
+      } else if constexpr(std::is_same_v<T, RecordingMultiStopwatch>) {
+         usize nRecordingsCapacity = 10;
+         return T::FromBuilder(nRecordingsCapacity, std::move(builder));
+      }
    }
 
 protected:
-   static std::vector<usize> NumStopwatchesVariants;
-   static std::vector<std::string> Names;
-   static std::vector<std::optional<MultiStopwatch>> StopwatchesVariants;
+   static std::vector<std::optional<T>> StopwatchesVariants;
 };
 
-std::vector<usize> MultiStopwatchTest::NumStopwatchesVariants = {1, 16, 256};
-std::vector<std::string> MultiStopwatchTest::Names =
+std::vector<std::string> MultiStopwatchBuilderTest::Names =
    std::vector<std::string>(1000);
-std::vector<std::optional<MultiStopwatch>>
-   MultiStopwatchTest::StopwatchesVariants =
-      std::vector<std::optional<MultiStopwatch>>(NumStopwatchesVariants.size());
 
-TEST_F(MultiStopwatchTest, BuilderCompleteness) {
+std::vector<usize> MultiStopwatchBuilderTest::NumStopwatchesVariants = {1, 16,
+                                                                        256};
+
+template<typename T>
+std::vector<std::optional<T>> MultiStopwatchTest<T>::StopwatchesVariants =
+   std::vector<std::optional<T>>(NumStopwatchesVariants.size());
+
+using AllStopwatchTypes =
+   ::testing::Types<MultiStopwatch, RecordingMultiStopwatch>;
+TYPED_TEST_SUITE(MultiStopwatchTest, AllStopwatchTypes);
+
+TEST_F(MultiStopwatchBuilderTest, BuilderCompleteness) {
    for(auto nStopwatches : NumStopwatchesVariants) {
       auto builder = MultiStopwatchBuilder{nStopwatches};
       for(usize i = 0; i < nStopwatches * 2; i += 2) {
          EXPECT_FALSE(builder.IsComplete())
             << "Builder shouldn't be complete while not all stopwatches named."
             << " nStopwatches=" << nStopwatches << " i=" << i;
-         builder.WithStopwatchName(i, std::string{Names[i % nStopwatches]});
+         builder.WithStopwatchName(i,
+                                   std::string{this->Names[i % nStopwatches]});
       }
       if(nStopwatches > 1) {
          usize oddIndex = nStopwatches * 2 + 1;
@@ -59,14 +77,16 @@ TEST_F(MultiStopwatchTest, BuilderCompleteness) {
             EXPECT_FALSE(builder.IsComplete())
                << "Builder shouldn't be complete while not all stopwatches named."
                << " nStopwatches=" << nStopwatches << " i=" << i;
-            builder.WithStopwatchName(i, std::string{Names[i % nStopwatches]});
+            builder.WithStopwatchName(
+               i, std::string{this->Names[i % nStopwatches]});
          }
       }
-      builder.WithStopwatchName(1, std::string{Names[1]});
+      builder.WithStopwatchName(1, std::string{this->Names[1]});
       EXPECT_TRUE(builder.IsComplete()) << "Builder should be complete";
 
       for(usize i = nStopwatches + 100; i < nStopwatches + 150; ++i) {
-         builder.WithStopwatchName(i, std::string{Names[i % nStopwatches]});
+         builder.WithStopwatchName(i,
+                                   std::string{this->Names[i % nStopwatches]});
          EXPECT_TRUE(builder.IsComplete())
             << "Builder should be complete still";
       }
@@ -76,7 +96,7 @@ TEST_F(MultiStopwatchTest, BuilderCompleteness) {
    }
 }
 
-TEST_F(MultiStopwatchTest, BuilderWithoutStopwatches) {
+TEST_F(MultiStopwatchBuilderTest, BuilderWithoutStopwatches) {
    auto builder = MultiStopwatchBuilder{0};
    EXPECT_TRUE(builder.IsComplete())
       << "No stopwatches to initialize, builder should be complete";
@@ -91,12 +111,13 @@ TEST_F(MultiStopwatchTest, BuilderWithoutStopwatches) {
       << "Making from a complete builder should succeed";
 }
 
-TEST_F(MultiStopwatchTest, IncompleteBuilder) {
+TEST_F(MultiStopwatchBuilderTest, IncompleteBuilder) {
    usize nStopwatches = 20;
    for(usize upTo = 0; upTo < nStopwatches - 1; ++upTo) {
       auto builder = MultiStopwatchBuilder{nStopwatches};
       for(usize i = 0; i < upTo; ++i) {
-         builder.WithStopwatchName(i, std::string{Names[i % nStopwatches]});
+         builder.WithStopwatchName(i,
+                                   std::string{this->Names[i % nStopwatches]});
       }
       EXPECT_FALSE(builder.IsComplete())
          << "Not all stopwatches are initialized, builder should be incomplete";
@@ -105,39 +126,39 @@ TEST_F(MultiStopwatchTest, IncompleteBuilder) {
    }
 }
 
-TEST_F(MultiStopwatchTest, StopwatchesNumber) {
-   for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-      EXPECT_EQ(StopwatchesVariants[i]->StopwatchesNumber(),
-                NumStopwatchesVariants[i])
+TYPED_TEST(MultiStopwatchTest, StopwatchesNumber) {
+   for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+      EXPECT_EQ(this->StopwatchesVariants[i]->StopwatchesNumber(),
+                this->NumStopwatchesVariants[i])
          << "Stopwatches number should match the builder's stopwatches number";
    }
 }
 
-TEST_F(MultiStopwatchTest, IsKeyValid) {
-   for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-      usize nStopwatches = NumStopwatchesVariants[i];
+TYPED_TEST(MultiStopwatchTest, IsKeyValid) {
+   for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+      usize nStopwatches = this->NumStopwatchesVariants[i];
       for(usize key = 0; key < nStopwatches; ++key) {
-         EXPECT_TRUE(StopwatchesVariants[i]->IsKeyValid(key))
+         EXPECT_TRUE(this->StopwatchesVariants[i]->IsKeyValid(key))
             << "Key less than StopwatchesNumber should be valid";
       }
       for(usize key = nStopwatches; key < nStopwatches + 100; ++key) {
-         EXPECT_FALSE(StopwatchesVariants[i]->IsKeyValid(key))
+         EXPECT_FALSE(this->StopwatchesVariants[i]->IsKeyValid(key))
             << "Key greater-equal than StopwatchesNumber should be invalid";
       }
    }
 }
 
-TEST_F(MultiStopwatchTest, NameOf) {
-   for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-      usize nStopwatches = NumStopwatchesVariants[i];
+TYPED_TEST(MultiStopwatchTest, NameOf) {
+   for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+      usize nStopwatches = this->NumStopwatchesVariants[i];
       for(usize key = 0; key < nStopwatches; ++key) {
-         EXPECT_EQ(StopwatchesVariants[i]->NameOf(key), Names[key])
+         EXPECT_EQ(this->StopwatchesVariants[i]->NameOf(key), this->Names[key])
             << "Name of stopwatch should match what was specified by builder";
       }
    }
 }
 
-TEST_F(MultiStopwatchTest, SetBeginningOfAll) {
+TYPED_TEST(MultiStopwatchTest, SetBeginningOfAll) {
    u64 nRepeats = 10, baseOffsetMs = 10;
 
    Stopwatch prototype;
@@ -146,14 +167,14 @@ TEST_F(MultiStopwatchTest, SetBeginningOfAll) {
       auto offsetMs  = std::chrono::milliseconds(repeat * baseOffsetMs);
       auto timePoint = now - offsetMs;
 
-      for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-         usize nStopwatches = NumStopwatchesVariants[i];
+      for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+         usize nStopwatches = this->NumStopwatchesVariants[i];
 
          prototype.SetBeginning(timePoint);
-         StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
+         this->StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(StopwatchesVariants[i]->BeginningOf(key),
+            EXPECT_EQ(this->StopwatchesVariants[i]->BeginningOf(key),
                       prototype.Beginning())
                << "Beginning of all stopwatches should change";
          }
@@ -161,26 +182,27 @@ TEST_F(MultiStopwatchTest, SetBeginningOfAll) {
    }
 }
 
-TEST_F(MultiStopwatchTest, SaveElapsedOfAll) {
+TYPED_TEST(MultiStopwatchTest, SaveElapsedOfAll) {
    u64 nRepeats = 5, baseOffsetMs = 10, allowedNoiseUs = 150;
 
    Stopwatch prototype;
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
-      for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-         usize nStopwatches = NumStopwatchesVariants[i];
+      for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+         usize nStopwatches = this->NumStopwatchesVariants[i];
+         auto& stopwatch    = this->StopwatchesVariants[i];
          auto timePoint     = std::chrono::high_resolution_clock::now()
                           - std::chrono::milliseconds(repeat * baseOffsetMs);
          prototype.SetBeginning(timePoint);
-         StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
+         stopwatch->SetBeginningOfAll(timePoint);
 
          prototype.SaveElapsed();
-         StopwatchesVariants[i]->SaveElapsedOfAll();
+         stopwatch->SaveElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_GE(StopwatchesVariants[i]->SavedElapsedUsOf(key),
+            EXPECT_GE(stopwatch->SavedElapsedUsOf(key),
                       prototype.SavedElapsedUs())
                << "Elapsed timing shouldn't be lower than work time";
-            EXPECT_LE(StopwatchesVariants[i]->SavedElapsedUsOf(key),
+            EXPECT_LE(stopwatch->SavedElapsedUsOf(key),
                       prototype.SavedElapsedUs() + allowedNoiseUs)
                << "Elapsed timing shouldn't be much bigger than work time";
          }
@@ -188,39 +210,40 @@ TEST_F(MultiStopwatchTest, SaveElapsedOfAll) {
    }
 }
 
-TEST_F(MultiStopwatchTest, ClearElapsedOfAll) {
+TYPED_TEST(MultiStopwatchTest, ClearElapsedOfAll) {
    u64 nRepeats = 5, baseOffsetMs = 10;
 
    Stopwatch prototype;
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
-      for(usize i = 0; i < StopwatchesVariants.size(); ++i) {
-         usize nStopwatches = NumStopwatchesVariants[i];
+      for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
+         usize nStopwatches = this->NumStopwatchesVariants[i];
+         auto& stopwatch    = this->StopwatchesVariants[i];
          auto timePoint     = std::chrono::high_resolution_clock::now()
                           - std::chrono::milliseconds(repeat * baseOffsetMs);
          prototype.SetBeginning(timePoint);
-         StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
+         stopwatch->SetBeginningOfAll(timePoint);
 
          prototype.SaveElapsed();
-         StopwatchesVariants[i]->SaveElapsedOfAll();
+         stopwatch->SaveElapsedOfAll();
 
          prototype.ClearElapsed();
-         StopwatchesVariants[i]->ClearElapsedOfAll();
+         stopwatch->ClearElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(StopwatchesVariants[i]->SavedElapsedOf(key),
-                      prototype.SavedElapsed())
+            EXPECT_EQ(stopwatch->SavedElapsedOf(key), prototype.SavedElapsed())
                << "After clearing the saved elapsed should reset";
          }
       }
    }
 }
 
-TEST_F(MultiStopwatchTest, AddSaveElapsedOfAll) {}
+// TODO(laralex): complete tests
+TYPED_TEST(MultiStopwatchTest, AddSaveElapsedOfAll) {}
 
-TEST_F(MultiStopwatchTest, SetBeginningOf) {}
-TEST_F(MultiStopwatchTest, SaveElapsedOf) {}
-TEST_F(MultiStopwatchTest, AddSaveElapsedOf) {}
-TEST_F(MultiStopwatchTest, ClearElapsedOf) {}
-TEST_F(MultiStopwatchTest, SavedElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, SetBeginningOf) {}
+TYPED_TEST(MultiStopwatchTest, SaveElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, AddSaveElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, ClearElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, SavedElapsedOf) {}
 
-TEST_F(MultiStopwatchTest, StopwatchesIndependence) {}
+TYPED_TEST(MultiStopwatchTest, StopwatchesIndependence) {}

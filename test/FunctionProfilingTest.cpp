@@ -1,11 +1,12 @@
 #include "wlf_core/Prelude.hpp"
 
+#include "gtest/gtest.h"
 #include <algorithm>
 #include <cmath>
-#include <gtest/gtest.h>
 #include <numeric>
-#include <spdlog/spdlog.h>
 #include <vector>
+#include <thread>
+
 
 using namespace wlf;
 
@@ -149,7 +150,7 @@ TEST_F(FunctionProfilingTest, ArbitraryInputsAccepted) {
 TEST_F(FunctionProfilingTest, CorrectTimeReturned) {
    usize nRuns = 5, baseSleepTimeMs = 100;
    f32 acceptedSleepNoiseMs = 15.0f;
-   auto SleepFunc         = [](usize sleepMillisecs) {
+   auto SleepFunc           = [](usize sleepMillisecs) {
       std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillisecs));
    };
 

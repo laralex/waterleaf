@@ -1,7 +1,8 @@
 #include "wlf_core/Prelude.hpp"
 
+#include "gtest/gtest.h"
 #include <chrono>
-#include <gtest/gtest.h>
+
 
 using namespace wlf;
 using namespace wlf::utils;
@@ -27,7 +28,7 @@ protected:
          auto now = std::chrono::high_resolution_clock::now();
          auto timePoint =
             now - std::chrono::milliseconds((i + 1) * baseOffsetMs);
-         StopwatchesVariants[i]->InnerStopwatch().SetBeginningOfAll(timePoint);
+         StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
          PrototypeStopwatchesVariants[i]->SetBeginningOfAll(timePoint);
       }
    }
@@ -64,26 +65,23 @@ TEST_F(RecordingMultiStopwatchTest, InnerStopwatch) {
 
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
       for(usize variant = 0; variant < StopwatchesVariants.size(); ++variant) {
-         auto nStopwatches =
-            StopwatchesVariants[variant]->InnerStopwatch().StopwatchesNumber();
+         auto nStopwatches = StopwatchesVariants[variant]->StopwatchesNumber();
          EXPECT_EQ(PrototypeStopwatchesVariants[variant]->StopwatchesNumber(),
                    nStopwatches)
             << "Inner stopwatch should have same number of stopwatches";
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(
-               PrototypeStopwatchesVariants[variant]->BeginningOf(key),
-               StopwatchesVariants[variant]->InnerStopwatch().BeginningOf(key))
+            EXPECT_EQ(PrototypeStopwatchesVariants[variant]->BeginningOf(key),
+                      StopwatchesVariants[variant]->BeginningOf(key))
                << "Inner stopwatch should have same beginnings";
 
-            EXPECT_EQ(
-               PrototypeStopwatchesVariants[variant]->NameOf(key),
-               StopwatchesVariants[variant]->InnerStopwatch().NameOf(key))
+            EXPECT_EQ(PrototypeStopwatchesVariants[variant]->NameOf(key),
+                      StopwatchesVariants[variant]->NameOf(key))
                << "Inner stopwatch should have same names";
          }
       }
    }
 }
-/* 
+
 TEST_F(RecordingMultiStopwatchTest, ReadingRecords) {
    u64 nRepeats = 20, baseOffsetMs = 100;
    usize nRecordsCapacity = 50;
@@ -97,10 +95,10 @@ TEST_F(RecordingMultiStopwatchTest, ReadingRecords) {
          auto offsetMs =
             std::chrono::milliseconds((repeat + recording + 1) * baseOffsetMs);
          auto timePoint = now - offsetMs;
-         stopwatch.InnerStopwatch().SetBeginning(timePoint);
-         stopwatch.InnerStopwatch().SaveElapsed();
+         stopwatch.SetBeginning(timePoint);
+         stopwatch.SaveElapsed();
          stopwatch.RecordState();
-         manualRecords[recording] = stopwatch.InnerStopwatch().SavedElapsedUs();
+         manualRecords[recording] = stopwatch.SavedElapsedUs();
          EXPECT_NE(manualRecords[recording], 0) << "Test is broken. No timing";
       }
 
@@ -114,7 +112,7 @@ TEST_F(RecordingMultiStopwatchTest, ReadingRecords) {
             << recordingOffset;
          EXPECT_EQ(stopwatch.RecordedElapsedUs(recordingOffset),
                    manualRecords[manualRecords.size() - recordingOffset - 1])
-            << "Record should match elapsed microseconds at the moment of saving."
+            << "Record shoulbe be the same as of saving"
             << " recordingOffset=" << recordingOffset;
       }
 
@@ -142,9 +140,9 @@ TEST_F(RecordingMultiStopwatchTest, ClearRecords) {
          auto offsetMs  = std::chrono::milliseconds(baseOffsetMs * (repeat + 1)
                                                    * (recording + 1));
          auto timePoint = now - offsetMs;
-         stopwatch.InnerStopwatch().SetBeginning(timePoint);
-         stopwatch.InnerStopwatch().SaveElapsed();
-         EXPECT_NE(stopwatch.InnerStopwatch().SavedElapsedUs(), 0)
+         stopwatch.SetBeginning(timePoint);
+         stopwatch.SaveElapsed();
+         EXPECT_NE(stopwatch.SavedElapsedUs(), 0)
             << "Test is broken. No timing";
          stopwatch.RecordState();
       }
@@ -176,5 +174,3 @@ TEST_F(RecordingMultiStopwatchTest, RecordsCapacity) {
       }
    }
 }
-
-TEST_F(RecordingMultiStopwatchTest, IsKeyValid) {} */

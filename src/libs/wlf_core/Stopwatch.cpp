@@ -6,7 +6,6 @@ using namespace wlf::utils;
 using duration_milli = std::chrono::duration<wlf::u64, std::milli>;
 using duration_micro = std::chrono::duration<wlf::u64, std::micro>;
 
-
 hires_timepoint Stopwatch::Beginning() const noexcept {
    return m_BeginningTimePoint;
 }

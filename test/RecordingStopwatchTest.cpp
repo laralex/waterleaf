@@ -1,7 +1,8 @@
 #include "wlf_core/Prelude.hpp"
 
+#include "gtest/gtest.h"
 #include <chrono>
-#include <gtest/gtest.h>
+
 
 using namespace wlf;
 using namespace wlf::utils;
@@ -16,8 +17,7 @@ TEST(RecordingStopwatchTest, InnerStopwatch) {
       innerStopwatch.SetBeginning(timePoint);
       Stopwatch cloneStopwatch{innerStopwatch};
       RecordingStopwatch stopwatch{nRecordsCapacity, std::move(cloneStopwatch)};
-      EXPECT_EQ(innerStopwatch.Beginning(),
-                stopwatch.Beginning())
+      EXPECT_EQ(innerStopwatch.Beginning(), stopwatch.Beginning())
          << "Inner stopwatch should be what was given upon construction";
    }
 }
