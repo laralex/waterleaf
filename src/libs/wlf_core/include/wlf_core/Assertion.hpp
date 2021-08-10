@@ -3,10 +3,11 @@
 #include "Defines.hpp"
 
 #include <string_view>
+#include <utility>
 
 namespace {
 
-enum class AssertionLevel : ptrdiff_t {
+enum class AssertionLevel : size_t {
    // only one enabled: define wlf::NoAsserts == true
    // else:             define wlf::NoAsserts == false
    None = 1 << 0,
@@ -21,9 +22,10 @@ enum class AssertionLevel : ptrdiff_t {
    DebugRunTime = 1 << 3,
 };
 
-constexpr AssertionLevel operator|(AssertionLevel lhs, AssertionLevel rhs) {
-   return static_cast<AssertionLevel>(static_cast<ptrdiff_t>(lhs)
-                                      | static_cast<ptrdiff_t>(rhs));
+constexpr AssertionLevel operator|(const AssertionLevel lhs,
+                                   const AssertionLevel rhs) {
+   return static_cast<AssertionLevel>(static_cast<size_t>(lhs)
+                                      | static_cast<size_t>(rhs));
 }
 
 inline constexpr AssertionLevel EnabledAssertions =
@@ -53,12 +55,12 @@ inline constexpr bool NoAsserts = (EnabledAssertions == AssertionLevel::None);
  * If library is configured to check runtime assertions, this assertion
  * will be compiled in any build type (Debug/Release) */
 ENGINE_API
-void Assert(bool isOk, std::string_view message);
+void Assert(const bool isOk, const std::string_view message);
 
 /* wlf::Assert
  * If library is configured to check debug runtime assertions, this assertion
  * will be compiled in Debug build type, and will be a noop in Release */
 ENGINE_API
-void AssertDebug(bool isOk, std::string_view message);
+void AssertDebug(const bool isOk, const std::string_view message);
 
 } // namespace wlf

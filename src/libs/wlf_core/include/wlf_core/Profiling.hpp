@@ -1,9 +1,9 @@
 #pragma once
 #include "Defines.hpp"
-#include "Stopwatch.hpp"
 #include "MultiStopwatch.hpp"
+#include "Stopwatch.hpp"
 #include "UtilityInterfaces.hpp"
-#include "UtilityWrappers.hpp"
+#include "UtilityDefines.hpp"
 
 #include <chrono>
 #include <functional>
@@ -12,12 +12,8 @@
 #include <string>
 #include <vector>
 
+
 namespace {
-
-using hires_clock     = std::chrono::high_resolution_clock;
-using hires_duration  = hires_clock::duration;
-using hires_timepoint = hires_clock::time_point;
-
 template<typename DurationT, typename F, typename... Args>
 auto ProfileRun(F&& function, Args&&... args) {
    const auto begin = hires_clock::now();
@@ -53,7 +49,7 @@ ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
 
 class ENGINE_API FrameProfiler : public INonCopyable {
 public:
-   explicit FrameProfiler(usize nFramesBuffered,
+   explicit FrameProfiler(const usize nFramesBuffered,
                           MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
          , m_NumFramesBuffered(nFramesBuffered)
@@ -62,18 +58,20 @@ public:
 
    wlf::usize StopwatchesNumber() const noexcept;
    wlf::usize BufferedFramesNumber() const noexcept;
-   bool IsKeyValid(usize key) const noexcept;
-   bool IsFrameDataAccessible(usize numFramesBack) const noexcept;
+   bool IsKeyValid(const usize key) const noexcept;
+   bool IsFrameDataAccessible(const usize numFramesBack) const noexcept;
 
    void StartNewFrame() noexcept;
-   bool BeginMeasureOf(usize key) noexcept;
-   bool EndMeasureOf(usize key) noexcept;
+   bool BeginMeasureOf(const usize key) noexcept;
+   bool EndMeasureOf(const usize key) noexcept;
 
-   std::optional<wlf::u64> CurrentCumulativeTimingOf(usize key) const noexcept;
    std::optional<wlf::u64>
-   HistoricalTimingOf(usize key, usize numFramesBack) const noexcept;
+   CurrentCumulativeTimingOf(const usize key) const noexcept;
    std::optional<wlf::u64>
-   HistoricalFrametime(usize numFramesBack = 1) const noexcept;
+   HistoricalTimingOf(const usize key,
+                      const usize numFramesBack) const noexcept;
+   std::optional<wlf::u64>
+   HistoricalFrametime(const usize numFramesBack = 1) const noexcept;
 
 private:
    usize m_NumFramesBuffered;

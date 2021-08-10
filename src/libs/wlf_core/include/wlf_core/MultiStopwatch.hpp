@@ -3,6 +3,7 @@
 #include "Defines.hpp"
 #include "Stopwatch.hpp"
 #include "UtilityInterfaces.hpp"
+#include "UtilityDefines.hpp"
 
 #include <chrono>
 #include <functional>
@@ -11,25 +12,19 @@
 #include <string>
 #include <vector>
 
-namespace {
-using hires_clock     = std::chrono::high_resolution_clock;
-using hires_duration  = hires_clock::duration;
-using hires_timepoint = hires_clock::time_point;
-} // namespace
-
 namespace wlf::utils {
 
 class ENGINE_API MultiStopwatch;
 
 class ENGINE_API MultiStopwatchBuilder {
 public:
-   explicit MultiStopwatchBuilder(usize nStopwatches) noexcept
+   explicit MultiStopwatchBuilder(const usize nStopwatches) noexcept
          : m_Stopwatches(nStopwatches)
          , m_Names(nStopwatches)
          , m_LeftToInitialize(nStopwatches) {}
    bool IsComplete() const noexcept;
    MultiStopwatchBuilder
-   WithStopwatchName(usize key, std::string&& displayedName) noexcept;
+   WithStopwatchName(const usize key, std::string&& displayedName) noexcept;
 
 private:
    friend MultiStopwatch;
@@ -48,30 +43,32 @@ public:
    FromBuilder(MultiStopwatchBuilder&&) noexcept;
 
    usize StopwatchesNumber() const noexcept;
-   bool IsKeyValid(usize key) const noexcept;
-   std::optional<std::string_view> NameOf(usize key) const noexcept;
+   bool IsKeyValid(const usize key) const noexcept;
+   std::optional<std::string_view> NameOf(const usize key) const noexcept;
 
-   std::optional<hires_timepoint> BeginningOf(usize key) const noexcept;
+   std::optional<hires_timepoint> BeginningOf(const usize key) const noexcept;
 
    bool SetBeginningOf(
-      usize key,
-      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const usize key,
+      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
    void SetBeginningOfAll(
-      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
-   bool SaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
-   void SaveElapsedOfAll(bool resetBeginning = false) noexcept;
+   bool SaveElapsedOf(const usize key,
+                      const bool resetBeginning = false) noexcept;
+   void SaveElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool AddSaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
-   void AddSaveElapsedOfAll(bool resetBeginning = false) noexcept;
+   bool AddSaveElapsedOf(const usize key,
+                         const bool resetBeginning = false) noexcept;
+   void AddSaveElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool ClearElapsedOf(usize key) noexcept;
+   bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> SavedElapsedOf(usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedUsOf(usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedMsOf(usize key) const noexcept;
+   std::optional<hires_duration> SavedElapsedOf(const usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedUsOf(const usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedMsOf(const usize key) const noexcept;
 
 private:
    explicit MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
@@ -83,7 +80,7 @@ private:
 
 class ENGINE_API RecordingMultiStopwatch : public INonCopyable {
 public:
-   explicit RecordingMultiStopwatch(usize recordsCapacity,
+   explicit RecordingMultiStopwatch(const usize recordsCapacity,
                                     MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
          , m_RecordsCapacity(recordsCapacity)
@@ -94,33 +91,35 @@ public:
 
    // MultiStopwatch delegates
    static std::optional<RecordingMultiStopwatch>
-   FromBuilder(usize recordsCapacity, MultiStopwatchBuilder&&) noexcept;
+   FromBuilder(const usize recordsCapacity, MultiStopwatchBuilder&&) noexcept;
 
    usize StopwatchesNumber() const noexcept;
-   bool IsKeyValid(usize key) const noexcept;
-   std::optional<std::string_view> NameOf(usize key) const noexcept;
+   bool IsKeyValid(const usize key) const noexcept;
+   std::optional<std::string_view> NameOf(const usize key) const noexcept;
 
-   std::optional<hires_timepoint> BeginningOf(usize key) const noexcept;
+   std::optional<hires_timepoint> BeginningOf(const usize key) const noexcept;
 
    bool SetBeginningOf(
-      usize key,
-      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const usize key,
+      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
    void SetBeginningOfAll(
-      hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
-   bool SaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
-   void SaveElapsedOfAll(bool resetBeginning = false) noexcept;
+   bool SaveElapsedOf(const usize key,
+                      const bool resetBeginning = false) noexcept;
+   void SaveElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool AddSaveElapsedOf(usize key, bool resetBeginning = false) noexcept;
-   void AddSaveElapsedOfAll(bool resetBeginning = false) noexcept;
+   bool AddSaveElapsedOf(const usize key,
+                         const bool resetBeginning = false) noexcept;
+   void AddSaveElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool ClearElapsedOf(usize key) noexcept;
+   bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> SavedElapsedOf(usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedUsOf(usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedMsOf(usize key) const noexcept;
+   std::optional<hires_duration> SavedElapsedOf(const usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedUsOf(const usize key) const noexcept;
+   std::optional<wlf::u64> SavedElapsedMsOf(const usize key) const noexcept;
 
    // Extending functionality
 
@@ -128,10 +127,10 @@ public:
    void ClearRecords() noexcept;
 
    usize RecordsCapacity() const noexcept;
-   bool IsRecordAvailable(usize stateOffset) const noexcept;
+   bool IsRecordAvailable(const usize stateOffset) const noexcept;
 
    std::optional<wlf::u64>
-   RecordedElapsedUsOf(usize key, usize stateOffset) const noexcept;
+   RecordedElapsedUsOf(const usize key, const usize stateOffset) const noexcept;
 
 private:
    usize m_RecordsCapacity  = 0;

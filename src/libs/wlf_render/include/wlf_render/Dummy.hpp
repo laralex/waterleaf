@@ -4,6 +4,6 @@
 namespace wlf::render {
 
 ENGINE_API
-constexpr auto ExampleSin(float x) -> float;
+constexpr auto ExampleSin(const float x) -> float;
 
 } // namespace wlf::render

@@ -10,17 +10,17 @@ hires_timepoint Stopwatch::Beginning() const noexcept {
    return m_BeginningTimePoint;
 }
 
-void Stopwatch::SetBeginning(hires_timepoint timePoint) noexcept {
+void Stopwatch::SetBeginning(const hires_timepoint timePoint) noexcept {
    m_BeginningTimePoint = std::min(timePoint, hires_clock::now());
 }
 
-void Stopwatch::SaveElapsed(bool resetBeginning) noexcept {
+void Stopwatch::SaveElapsed(const bool resetBeginning) noexcept {
    auto now       = hires_clock::now();
    m_SavedElapsed = now - m_BeginningTimePoint;
    if(resetBeginning) { m_BeginningTimePoint = now; }
 }
 
-void Stopwatch::AddSaveElapsed(bool resetBeginning) noexcept {
+void Stopwatch::AddSaveElapsed(const bool resetBeginning) noexcept {
    auto now = hires_clock::now();
    m_SavedElapsed += now - m_BeginningTimePoint;
    if(resetBeginning) { m_BeginningTimePoint = now; }
@@ -45,15 +45,15 @@ wlf::u64 Stopwatch::SavedElapsedMs() const noexcept {
 hires_timepoint RecordingStopwatch::Beginning() const noexcept {
    return m_Stopwatch.Beginning();
 }
-void RecordingStopwatch::SetBeginning(hires_timepoint pastTimepoint) noexcept {
+void RecordingStopwatch::SetBeginning(const hires_timepoint pastTimepoint) noexcept {
    m_Stopwatch.SetBeginning(pastTimepoint);
 }
 
-void RecordingStopwatch::SaveElapsed(bool resetBeginning) noexcept {
+void RecordingStopwatch::SaveElapsed(const bool resetBeginning) noexcept {
    m_Stopwatch.SaveElapsed(resetBeginning);
 }
 
-void RecordingStopwatch::AddSaveElapsed(bool resetBeginning) noexcept {
+void RecordingStopwatch::AddSaveElapsed(const bool resetBeginning) noexcept {
    m_Stopwatch.AddSaveElapsed(resetBeginning);
 }
 
@@ -89,12 +89,12 @@ usize RecordingStopwatch::RecordsCapacity() const noexcept {
    return m_Records.size();
 }
 
-bool RecordingStopwatch::IsRecordAvailable(usize recordOffset) const noexcept {
+bool RecordingStopwatch::IsRecordAvailable(const usize recordOffset) const noexcept {
    return recordOffset < m_Records.size() && recordOffset < m_RecordsEverSaved;
 }
 
 std::optional<wlf::u64>
-RecordingStopwatch::RecordedElapsedUs(usize recordOffset) const noexcept {
+RecordingStopwatch::RecordedElapsedUs(const usize recordOffset) const noexcept {
    if(!IsRecordAvailable(recordOffset)) { return std::nullopt; }
 
    if(m_RecordsIt >= recordOffset) {

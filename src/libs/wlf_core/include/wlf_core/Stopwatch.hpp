@@ -1,17 +1,13 @@
 #pragma once
 
 #include "Defines.hpp"
+#include "UtilityDefines.hpp"
 #include "UtilityInterfaces.hpp"
 
 #include <chrono>
 #include <optional>
 #include <vector>
 
-namespace {
-using hires_clock     = std::chrono::high_resolution_clock;
-using hires_duration  = hires_clock::duration;
-using hires_timepoint = hires_clock::time_point;
-} // namespace
 
 namespace wlf::utils {
 
@@ -26,11 +22,11 @@ public:
    Stopwatch& operator=(const Stopwatch&) = default;
 
    hires_timepoint Beginning() const noexcept;
-   void
-   SetBeginning(hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
+   void SetBeginning(
+      const hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
 
-   void SaveElapsed(bool resetBeginning = false) noexcept;
-   void AddSaveElapsed(bool resetBeginning = false) noexcept;
+   void SaveElapsed(const bool resetBeginning = false) noexcept;
+   void AddSaveElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
    hires_duration SavedElapsed() const noexcept;
    wlf::u64 SavedElapsedUs() const noexcept;
@@ -43,7 +39,7 @@ private:
 
 class ENGINE_API RecordingStopwatch : INonCopyable {
 public:
-   explicit RecordingStopwatch(usize recordsCapacity,
+   explicit RecordingStopwatch(const usize recordsCapacity,
                                Stopwatch&& stopwatch) noexcept
          : INonCopyable()
          , m_Stopwatch(std::move(stopwatch))
@@ -56,24 +52,24 @@ public:
 
    // Stopwatch delegates
    hires_timepoint Beginning() const noexcept;
-   void
-   SetBeginning(hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
+   void SetBeginning(
+      const hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
 
-   void SaveElapsed(bool resetBeginning = false) noexcept;
-   void AddSaveElapsed(bool resetBeginning = false) noexcept;
+   void SaveElapsed(const bool resetBeginning = false) noexcept;
+   void AddSaveElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
    hires_duration SavedElapsed() const noexcept;
    wlf::u64 SavedElapsedUs() const noexcept;
    wlf::u64 SavedElapsedMs() const noexcept;
-   
+
    // Extended functionality
    void RecordState() noexcept;
    void ClearRecords() noexcept;
 
    usize RecordsCapacity() const noexcept;
-   bool IsRecordAvailable(usize recordingOffset) const noexcept;
+   bool IsRecordAvailable(const usize recordingOffset) const noexcept;
    std::optional<wlf::u64>
-   RecordedElapsedUs(usize recordingOffset) const noexcept;
+   RecordedElapsedUs(const usize recordingOffset) const noexcept;
 
 private:
    Stopwatch m_Stopwatch;

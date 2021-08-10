@@ -14,11 +14,11 @@ wlf::usize FrameProfiler::BufferedFramesNumber() const noexcept {
    return m_NumFramesBuffered;
 }
 
-bool FrameProfiler::IsKeyValid(usize key) const noexcept {
+bool FrameProfiler::IsKeyValid(const usize key) const noexcept {
    return m_ProfilePartsMultiStopwatch.IsKeyValid(key);
 }
 
-bool FrameProfiler::IsFrameDataAccessible(usize numFramesBack) const noexcept {
+bool FrameProfiler::IsFrameDataAccessible(const usize numFramesBack) const noexcept {
    return m_FrameTimeStopwatch.IsRecordAvailable(numFramesBack - 1);
 }
 
@@ -29,29 +29,29 @@ void FrameProfiler::StartNewFrame() noexcept {
    m_FrameTimeStopwatch.RecordState();
 }
 
-bool FrameProfiler::BeginMeasureOf(usize key) noexcept {
+bool FrameProfiler::BeginMeasureOf(const usize key) noexcept {
    return m_ProfilePartsMultiStopwatch.SetBeginningOf(key);
 }
 
-bool FrameProfiler::EndMeasureOf(usize key) noexcept {
+bool FrameProfiler::EndMeasureOf(const usize key) noexcept {
    return m_ProfilePartsMultiStopwatch.AddSaveElapsedOf(key);
 }
 
 std::optional<wlf::u64>
-FrameProfiler::CurrentCumulativeTimingOf(usize key) const noexcept {
+FrameProfiler::CurrentCumulativeTimingOf(const usize key) const noexcept {
    return m_ProfilePartsMultiStopwatch.SavedElapsedUsOf(key);
 }
 
 std::optional<wlf::u64>
-FrameProfiler::HistoricalTimingOf(usize key,
-                                  usize numFramesBack) const noexcept {
+FrameProfiler::HistoricalTimingOf(const usize key,
+                                  const usize numFramesBack) const noexcept {
    if(numFramesBack == 0) return std::nullopt;
    return m_ProfilePartsMultiStopwatch.RecordedElapsedUsOf(key,
                                                            numFramesBack - 1);
 }
 
 std::optional<wlf::u64>
-FrameProfiler::HistoricalFrametime(usize numFramesBack) const noexcept {
+FrameProfiler::HistoricalFrametime(const usize numFramesBack) const noexcept {
    if(numFramesBack == 0) return std::nullopt;
    return m_FrameTimeStopwatch.RecordedElapsedUs(numFramesBack - 1);
 }
