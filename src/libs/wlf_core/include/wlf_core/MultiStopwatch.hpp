@@ -2,8 +2,8 @@
 
 #include "Defines.hpp"
 #include "Stopwatch.hpp"
-#include "UtilityInterfaces.hpp"
 #include "UtilityDefines.hpp"
+#include "UtilityInterfaces.hpp"
 
 #include <chrono>
 #include <functional>
@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 
 namespace wlf::utils {
 
@@ -55,20 +56,20 @@ public:
    void SetBeginningOfAll(
       const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
-   bool SaveElapsedOf(const usize key,
+   bool StoreElapsedOf(const usize key,
                       const bool resetBeginning = false) noexcept;
-   void SaveElapsedOfAll(const bool resetBeginning = false) noexcept;
+   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool AddSaveElapsedOf(const usize key,
+   bool AddStoreElapsedOf(const usize key,
                          const bool resetBeginning = false) noexcept;
-   void AddSaveElapsedOfAll(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> SavedElapsedOf(const usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedUsOf(const usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedMsOf(const usize key) const noexcept;
+   std::optional<hires_duration> GetElapsedOf(const usize key) const noexcept;
+   std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
+   std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
 
 private:
    explicit MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
@@ -106,20 +107,20 @@ public:
    void SetBeginningOfAll(
       const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
 
-   bool SaveElapsedOf(const usize key,
+   bool StoreElapsedOf(const usize key,
                       const bool resetBeginning = false) noexcept;
-   void SaveElapsedOfAll(const bool resetBeginning = false) noexcept;
+   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
-   bool AddSaveElapsedOf(const usize key,
+   bool AddStoreElapsedOf(const usize key,
                          const bool resetBeginning = false) noexcept;
-   void AddSaveElapsedOfAll(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> SavedElapsedOf(const usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedUsOf(const usize key) const noexcept;
-   std::optional<wlf::u64> SavedElapsedMsOf(const usize key) const noexcept;
+   std::optional<hires_duration> GetElapsedOf(const usize key) const noexcept;
+   std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
+   std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
 
    // Extending functionality
 

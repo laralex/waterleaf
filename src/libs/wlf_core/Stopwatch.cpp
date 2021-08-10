@@ -14,13 +14,13 @@ void Stopwatch::SetBeginning(const hires_timepoint timePoint) noexcept {
    m_BeginningTimePoint = std::min(timePoint, hires_clock::now());
 }
 
-void Stopwatch::SaveElapsed(const bool resetBeginning) noexcept {
+void Stopwatch::StoreElapsed(const bool resetBeginning) noexcept {
    auto now       = hires_clock::now();
    m_SavedElapsed = now - m_BeginningTimePoint;
    if(resetBeginning) { m_BeginningTimePoint = now; }
 }
 
-void Stopwatch::AddSaveElapsed(const bool resetBeginning) noexcept {
+void Stopwatch::AddStoreElapsed(const bool resetBeginning) noexcept {
    auto now = hires_clock::now();
    m_SavedElapsed += now - m_BeginningTimePoint;
    if(resetBeginning) { m_BeginningTimePoint = now; }
@@ -30,15 +30,15 @@ void Stopwatch::ClearElapsed() noexcept {
    m_SavedElapsed = std::chrono::nanoseconds{0};
 }
 
-hires_clock::duration Stopwatch::SavedElapsed() const noexcept {
+hires_clock::duration Stopwatch::GetElapsed() const noexcept {
    return m_SavedElapsed;
 }
 
-wlf::u64 Stopwatch::SavedElapsedUs() const noexcept {
+wlf::u64 Stopwatch::GetElapsedUs() const noexcept {
    return std::chrono::duration_cast<duration_micro>(m_SavedElapsed).count();
 }
 
-wlf::u64 Stopwatch::SavedElapsedMs() const noexcept {
+wlf::u64 Stopwatch::GetElapsedMs() const noexcept {
    return std::chrono::duration_cast<duration_milli>(m_SavedElapsed).count();
 }
 
@@ -49,34 +49,34 @@ void RecordingStopwatch::SetBeginning(const hires_timepoint pastTimepoint) noexc
    m_Stopwatch.SetBeginning(pastTimepoint);
 }
 
-void RecordingStopwatch::SaveElapsed(const bool resetBeginning) noexcept {
-   m_Stopwatch.SaveElapsed(resetBeginning);
+void RecordingStopwatch::StoreElapsed(const bool resetBeginning) noexcept {
+   m_Stopwatch.StoreElapsed(resetBeginning);
 }
 
-void RecordingStopwatch::AddSaveElapsed(const bool resetBeginning) noexcept {
-   m_Stopwatch.AddSaveElapsed(resetBeginning);
+void RecordingStopwatch::AddStoreElapsed(const bool resetBeginning) noexcept {
+   m_Stopwatch.AddStoreElapsed(resetBeginning);
 }
 
 void RecordingStopwatch::ClearElapsed() noexcept {
    m_Stopwatch.ClearElapsed();
 }
 
-hires_duration RecordingStopwatch::SavedElapsed() const noexcept {
-   return m_Stopwatch.SavedElapsed();
+hires_duration RecordingStopwatch::GetElapsed() const noexcept {
+   return m_Stopwatch.GetElapsed();
 }
 
-wlf::u64 RecordingStopwatch::SavedElapsedUs() const noexcept {
-   return m_Stopwatch.SavedElapsedUs();
+wlf::u64 RecordingStopwatch::GetElapsedUs() const noexcept {
+   return m_Stopwatch.GetElapsedUs();
 }
 
-wlf::u64 RecordingStopwatch::SavedElapsedMs() const noexcept {
-   return m_Stopwatch.SavedElapsedMs();
+wlf::u64 RecordingStopwatch::GetElapsedMs() const noexcept {
+   return m_Stopwatch.GetElapsedMs();
 }
 
 void RecordingStopwatch::RecordState() noexcept {
    ++m_RecordsIt;
    if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
-   m_Records[m_RecordsIt] = SavedElapsedUs();
+   m_Records[m_RecordsIt] = GetElapsedUs();
    ++m_RecordsEverSaved;
 }
 

@@ -182,7 +182,7 @@ TYPED_TEST(MultiStopwatchTest, SetBeginningOfAll) {
    }
 }
 
-TYPED_TEST(MultiStopwatchTest, SaveElapsedOfAll) {
+TYPED_TEST(MultiStopwatchTest, StoreElapsedOfAll) {
    u64 nRepeats = 5, baseOffsetMs = 10, allowedNoiseUs = 150;
 
    Stopwatch prototype;
@@ -195,15 +195,15 @@ TYPED_TEST(MultiStopwatchTest, SaveElapsedOfAll) {
          prototype.SetBeginning(timePoint);
          stopwatch->SetBeginningOfAll(timePoint);
 
-         prototype.SaveElapsed();
-         stopwatch->SaveElapsedOfAll();
+         prototype.StoreElapsed();
+         stopwatch->StoreElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_GE(stopwatch->SavedElapsedUsOf(key),
-                      prototype.SavedElapsedUs())
+            EXPECT_GE(stopwatch->GetElapsedUsOf(key),
+                      prototype.GetElapsedUs())
                << "Elapsed timing shouldn't be lower than work time";
-            EXPECT_LE(stopwatch->SavedElapsedUsOf(key),
-                      prototype.SavedElapsedUs() + allowedNoiseUs)
+            EXPECT_LE(stopwatch->GetElapsedUsOf(key),
+                      prototype.GetElapsedUs() + allowedNoiseUs)
                << "Elapsed timing shouldn't be much bigger than work time";
          }
       }
@@ -223,14 +223,14 @@ TYPED_TEST(MultiStopwatchTest, ClearElapsedOfAll) {
          prototype.SetBeginning(timePoint);
          stopwatch->SetBeginningOfAll(timePoint);
 
-         prototype.SaveElapsed();
-         stopwatch->SaveElapsedOfAll();
+         prototype.StoreElapsed();
+         stopwatch->StoreElapsedOfAll();
 
          prototype.ClearElapsed();
          stopwatch->ClearElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(stopwatch->SavedElapsedOf(key), prototype.SavedElapsed())
+            EXPECT_EQ(stopwatch->GetElapsedOf(key), prototype.GetElapsed())
                << "After clearing the saved elapsed should reset";
          }
       }
@@ -238,12 +238,12 @@ TYPED_TEST(MultiStopwatchTest, ClearElapsedOfAll) {
 }
 
 // TODO(laralex): complete tests
-TYPED_TEST(MultiStopwatchTest, AddSaveElapsedOfAll) {}
+TYPED_TEST(MultiStopwatchTest, AddStoreElapsedOfAll) {}
 
 TYPED_TEST(MultiStopwatchTest, SetBeginningOf) {}
-TYPED_TEST(MultiStopwatchTest, SaveElapsedOf) {}
-TYPED_TEST(MultiStopwatchTest, AddSaveElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, StoreElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, AddStoreElapsedOf) {}
 TYPED_TEST(MultiStopwatchTest, ClearElapsedOf) {}
-TYPED_TEST(MultiStopwatchTest, SavedElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, GetElapsedOf) {}
 
 TYPED_TEST(MultiStopwatchTest, StopwatchesIndependence) {}

@@ -26,12 +26,12 @@ constexpr void AbortIfNotOk(const bool isOk, const std::string_view message) {
 
 /* Assertion utilities */
 
-void wlf::Assert(const bool isOk, const std::string_view message) {
+void wlf::Assert(const bool isOk, const std::string_view message) noexcept {
    constexpr bool chosen = (EnabledAssertions & AssertionLevel::RunTime);
    if constexpr(!wlf::NoAsserts && chosen) { AbortIfNotOk(isOk, message); }
 }
 
-void wlf::AssertDebug(const bool isOk, const std::string_view message) {
+void wlf::AssertDebug(const bool isOk, const std::string_view message) noexcept {
    constexpr bool chosen = (EnabledAssertions & AssertionLevel::DebugRunTime);
    if constexpr(!wlf::NoAsserts && wlf::IsDebugBuild && chosen) {
       AbortIfNotOk(isOk, message);

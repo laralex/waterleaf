@@ -25,12 +25,12 @@ public:
    void SetBeginning(
       const hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
 
-   void SaveElapsed(const bool resetBeginning = false) noexcept;
-   void AddSaveElapsed(const bool resetBeginning = false) noexcept;
+   void StoreElapsed(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
-   hires_duration SavedElapsed() const noexcept;
-   wlf::u64 SavedElapsedUs() const noexcept;
-   wlf::u64 SavedElapsedMs() const noexcept;
+   hires_duration GetElapsed() const noexcept;
+   wlf::u64 GetElapsedUs() const noexcept;
+   wlf::u64 GetElapsedMs() const noexcept;
 
 private:
    hires_timepoint m_BeginningTimePoint;
@@ -55,12 +55,12 @@ public:
    void SetBeginning(
       const hires_timepoint pastTimepoint = hires_clock::now()) noexcept;
 
-   void SaveElapsed(const bool resetBeginning = false) noexcept;
-   void AddSaveElapsed(const bool resetBeginning = false) noexcept;
+   void StoreElapsed(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
-   hires_duration SavedElapsed() const noexcept;
-   wlf::u64 SavedElapsedUs() const noexcept;
-   wlf::u64 SavedElapsedMs() const noexcept;
+   hires_duration GetElapsed() const noexcept;
+   wlf::u64 GetElapsedUs() const noexcept;
+   wlf::u64 GetElapsedMs() const noexcept;
 
    // Extended functionality
    void RecordState() noexcept;

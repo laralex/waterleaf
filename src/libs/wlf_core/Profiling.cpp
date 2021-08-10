@@ -25,7 +25,7 @@ bool FrameProfiler::IsFrameDataAccessible(const usize numFramesBack) const noexc
 void FrameProfiler::StartNewFrame() noexcept {
    m_ProfilePartsMultiStopwatch.RecordState();
    m_ProfilePartsMultiStopwatch.ClearElapsedOfAll();
-   m_FrameTimeStopwatch.SaveElapsed(/*resetBeginning*/ true);
+   m_FrameTimeStopwatch.StoreElapsed(/*resetBeginning*/ true);
    m_FrameTimeStopwatch.RecordState();
 }
 
@@ -34,12 +34,12 @@ bool FrameProfiler::BeginMeasureOf(const usize key) noexcept {
 }
 
 bool FrameProfiler::EndMeasureOf(const usize key) noexcept {
-   return m_ProfilePartsMultiStopwatch.AddSaveElapsedOf(key);
+   return m_ProfilePartsMultiStopwatch.AddStoreElapsedOf(key);
 }
 
 std::optional<wlf::u64>
 FrameProfiler::CurrentCumulativeTimingOf(const usize key) const noexcept {
-   return m_ProfilePartsMultiStopwatch.SavedElapsedUsOf(key);
+   return m_ProfilePartsMultiStopwatch.GetElapsedUsOf(key);
 }
 
 std::optional<wlf::u64>

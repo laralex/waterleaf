@@ -36,9 +36,9 @@ TEST(RecordingStopwatchTest, ReadingRecords) {
             std::chrono::milliseconds((repeat + recording + 1) * baseOffsetMs);
          auto timePoint = now - offsetMs;
          stopwatch.SetBeginning(timePoint);
-         stopwatch.SaveElapsed();
+         stopwatch.StoreElapsed();
          stopwatch.RecordState();
-         manualRecords[recording] = stopwatch.SavedElapsedUs();
+         manualRecords[recording] = stopwatch.GetElapsedUs();
          EXPECT_NE(manualRecords[recording], 0) << "Test is broken. No timing";
       }
 
@@ -81,8 +81,8 @@ TEST(RecordingStopwatchTest, ClearRecords) {
                                                    * (recording + 1));
          auto timePoint = now - offsetMs;
          stopwatch.SetBeginning(timePoint);
-         stopwatch.SaveElapsed();
-         EXPECT_NE(stopwatch.SavedElapsedUs(), 0)
+         stopwatch.StoreElapsed();
+         EXPECT_NE(stopwatch.GetElapsedUs(), 0)
             << "Test is broken. No timing";
          stopwatch.RecordState();
       }
