@@ -5,7 +5,7 @@
 
 
 using namespace wlf;
-using namespace wlf::utils;
+using namespace wlf::util;
 
 class RecordingMultiStopwatchTest : public ::testing::Test {
 protected:

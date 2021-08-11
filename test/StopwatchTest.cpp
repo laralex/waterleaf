@@ -6,7 +6,7 @@
 
 
 using namespace wlf;
-using namespace wlf::utils;
+using namespace wlf::util;
 
 template<typename T>
 class StopwatchTest : public ::testing::Test {

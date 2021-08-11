@@ -2,8 +2,8 @@
 #include "Defines.hpp"
 #include "MultiStopwatch.hpp"
 #include "Stopwatch.hpp"
-#include "UtilityInterfaces.hpp"
 #include "UtilityDefines.hpp"
+#include "UtilityInterfaces.hpp"
 
 #include <chrono>
 #include <functional>
@@ -13,38 +13,70 @@
 #include <vector>
 
 
-namespace {
+
+namespace wlf::util::detail {
+
+template<
+   typename F,
+   typename... Args,
+   typename = std::enable_if_t<!std::is_member_pointer_v<std::decay_t<F>>>>
+auto Invoke(F&& function, Args&&... args) noexcept(
+   noexcept(std::forward<F>(function)(std::forward<Args>(args)...)))
+   -> decltype(std::forward<F>(function)(std::forward<Args>(args)...)) {
+   return std::forward<F>(function)(std::forward<Args>(args)...);
+}
+
+template<typename F,
+         typename... Args,
+         typename = std::enable_if_t<std::is_member_pointer_v<std::decay_t<F>>>,
+         int      = 0>
+auto Invoke(F&& function, Args&&... args) noexcept(
+   noexcept(std::mem_fn(function)(std::forward<Args>(args)...)))
+   -> decltype(std::mem_fn(function)(std::forward<Args>(args)...)) {
+   return std::mem_fn(function)(std::forward<Args>(args)...);
+}
+
+} // namespace wlf::util::detail
+
+namespace wlf::util {
+
 template<typename DurationT, typename F, typename... Args>
-auto ProfileRun(F&& function, Args&&... args) {
+auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
+   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    const auto begin = hires_clock::now();
-   // if there's something to return - return a pair of result and time
-   if constexpr(!std::is_same_v<std::invoke_result_t<F&&, Args&&...>, void>) {
-      auto function_output = function(std::forward<Args>(args)...);
-      const auto end       = hires_clock::now();
-      return std::make_pair(
-         function_output,
-         std::chrono::duration_cast<DurationT>(end - begin).count());
-   } else { // or return just time
-      function(std::forward<Args>(args)...);
-      const auto end = hires_clock::now();
-      return std::chrono::duration_cast<DurationT>(end - begin).count();
-   }
+   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
+   const auto end = hires_clock::now();
+   return std::chrono::duration_cast<DurationT>(end - begin).count();
 }
 
-} // namespace
-
-namespace wlf::utils {
-
-template<typename F, typename... Args>
-ENGINE_API auto ProfileInMicrosecs(F&& function, Args&&... args) {
-   return ProfileRun<std::chrono::duration<wlf::u64, std::micro>>(
-      std::forward<F>(function), std::forward<Args>(args)...);
+template<typename DurationT,
+         typename F,
+         typename... Args,
+         typename =
+            std::enable_if_t<std::is_void_v<std::invoke_result_t<F, Args...>>>>
+auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
+   ProfileInvokeDiscardResult<DurationT>(std::forward<F>(function),
+                                         std::forward<Args>(args)...))) {
+   return ProfileInvokeDiscardResult<DurationT>(std::forward<F>(function),
+                                                std::forward<Args>(args)...);
 }
 
-template<typename F, typename... Args>
-ENGINE_API auto ProfileInMillisecs(F&& function, Args&&... args) {
-   return ProfileRun<std::chrono::duration<wlf::u64, std::milli>>(
-      std::forward<F>(function), std::forward<Args>(args)...);
+// if there's something to return - return a pair of result and time
+template<typename DurationT,
+         typename F,
+         typename... Args,
+         typename =
+            std::enable_if_t<!std::is_void_v<std::invoke_result_t<F, Args...>>>,
+         int = 0>
+auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
+   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
+   const auto begin = hires_clock::now();
+   auto&& functionOutput =
+      detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
+   const auto end = hires_clock::now();
+   return std::make_pair(
+      std::move(functionOutput),
+      std::chrono::duration_cast<DurationT>(end - begin).count());
 }
 
 class ENGINE_API FrameProfiler : public INonCopyable {
@@ -79,4 +111,4 @@ private:
    RecordingStopwatch m_FrameTimeStopwatch;
 };
 
-} // namespace wlf::utils
+} // namespace wlf::util

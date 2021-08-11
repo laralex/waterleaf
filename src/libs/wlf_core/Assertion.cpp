@@ -9,8 +9,8 @@ using namespace wlf;
 
 namespace {
 
-constexpr auto operator&(const AssertionLevel lhs, const AssertionLevel rhs)
-   -> bool {
+constexpr auto operator&(const detail::AssertionLevel lhs,
+                         const detail::AssertionLevel rhs) -> bool {
    return static_cast<size_t>(lhs) & static_cast<size_t>(rhs);
 }
 
@@ -27,12 +27,15 @@ constexpr void AbortIfNotOk(const bool isOk, const std::string_view message) {
 /* Assertion utilities */
 
 void wlf::Assert(const bool isOk, const std::string_view message) noexcept {
-   constexpr bool chosen = (EnabledAssertions & AssertionLevel::RunTime);
+   constexpr bool chosen =
+      (detail::EnabledAssertions & detail::AssertionLevel::RunTime);
    if constexpr(!wlf::NoAsserts && chosen) { AbortIfNotOk(isOk, message); }
 }
 
-void wlf::AssertDebug(const bool isOk, const std::string_view message) noexcept {
-   constexpr bool chosen = (EnabledAssertions & AssertionLevel::DebugRunTime);
+void wlf::AssertDebug(const bool isOk,
+                      const std::string_view message) noexcept {
+   constexpr bool chosen =
+      (detail::EnabledAssertions & detail::AssertionLevel::DebugRunTime);
    if constexpr(!wlf::NoAsserts && wlf::IsDebugBuild && chosen) {
       AbortIfNotOk(isOk, message);
    }

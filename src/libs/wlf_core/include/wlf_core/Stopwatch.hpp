@@ -9,7 +9,7 @@
 #include <vector>
 
 
-namespace wlf::utils {
+namespace wlf::util {
 
 class ENGINE_API Stopwatch {
 public:
@@ -78,4 +78,4 @@ private:
    usize m_RecordsIt        = 0;
 };
 
-} // namespace wlf::utils
+} // namespace wlf::util

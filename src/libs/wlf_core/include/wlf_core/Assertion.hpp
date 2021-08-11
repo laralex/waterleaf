@@ -5,7 +5,7 @@
 #include <string_view>
 #include <utility>
 
-namespace {
+namespace wlf::detail {
 
 enum class AssertionLevel : size_t {
    // only one enabled: define wlf::NoAsserts == true
@@ -49,7 +49,7 @@ namespace wlf {
  * NOTE: use it to suppress `static_assert` like so
  * `static_assert(ok || wlf::NoAsserts)` */
 ENGINE_API
-inline constexpr bool NoAsserts = (EnabledAssertions == AssertionLevel::None);
+inline constexpr bool NoAsserts = (detail::EnabledAssertions == detail::AssertionLevel::None);
 
 /* wlf::Assert
  * If library is configured to check runtime assertions, this assertion

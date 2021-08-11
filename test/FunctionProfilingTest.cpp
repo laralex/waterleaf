@@ -4,9 +4,8 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-#include <vector>
 #include <thread>
-
+#include <vector>
 
 using namespace wlf;
 
@@ -99,24 +98,58 @@ TEST_F(FunctionProfilingTest, OutputPassedThrough) {
    };
 
    {
-      const auto DummyFunc  = []() { return Result(42.0f, 123); };
-      auto [result, timeMs] = utils::ProfileInMillisecs(DummyFunc);
+      const auto DummyFunc = []() { return Result(42.0f, 123); };
+      auto [result, timeMs] =
+         util::ProfileInvoke<std::chrono::milliseconds>(DummyFunc);
       EXPECT_NEAR(result.a, 42.0f, 1e-5);
       EXPECT_EQ(result.b, 123);
    }
 
    {
-      const auto DummyFunc  = []() { return Result(36.5f, 42); };
-      auto [result, timeMs] = utils::ProfileInMicrosecs(DummyFunc);
+      const auto DummyFunc = []() { return Result(36.5f, 42); };
+      auto [result, timeMs] =
+         util::ProfileInvoke<std::chrono::milliseconds>(DummyFunc);
       EXPECT_NEAR(result.a, 36.5f, 1e-5);
       EXPECT_EQ(result.b, 42);
    }
 
    {
-      auto DummyFunc          = []() {};
-      auto timeMs             = utils::ProfileInMicrosecs(DummyFunc);
-      bool returnedOnlyTiming = std::is_same_v<u64, decltype(timeMs)>;
+      auto DummyFunc = []() {};
+      auto timeMs = util::ProfileInvoke<std::chrono::microseconds>(DummyFunc);
+      bool returnedOnlyTiming = std::is_same_v<long long, decltype(timeMs)>;
       EXPECT_TRUE(returnedOnlyTiming);
+   }
+}
+
+TEST_F(FunctionProfilingTest, ResultDiscarding) {
+   struct Result {
+      f32 a;
+      u8 b;
+      Result(f32 a, u8 b) : a(a), b(b) {}
+   };
+
+   {
+      const auto DummyFunc = []() { return Result(42.0f, 123); };
+      auto timeMs =
+         util::ProfileInvokeDiscardResult<std::chrono::milliseconds>(DummyFunc);
+      bool isTimestampType = std::is_same_v<long long, decltype(timeMs)>;
+      EXPECT_TRUE(isTimestampType);
+   }
+
+   {
+      const auto DummyFunc = []() { return Result(36.5f, 42); };
+      auto timeMs =
+         util::ProfileInvokeDiscardResult<std::chrono::milliseconds>(DummyFunc);
+      bool isTimestampType = std::is_same_v<long long, decltype(timeMs)>;
+      EXPECT_TRUE(isTimestampType);
+   }
+
+   {
+      auto DummyFunc = []() {};
+      auto timeMs =
+         util::ProfileInvokeDiscardResult<std::chrono::microseconds>(DummyFunc);
+      bool isTimestampType = std::is_same_v<long long, decltype(timeMs)>;
+      EXPECT_TRUE(isTimestampType);
    }
 }
 
@@ -125,8 +158,8 @@ TEST_F(FunctionProfilingTest, ArbitraryInputsAccepted) {
       auto DummyFunc = [](f64 a, f64 b, f64 c, f64 d, f64 e, f32 f, f64 g) {
          return (a + b + c + d + e + static_cast<f64>(f) * g);
       };
-      auto [result, timeMs] =
-         utils::ProfileInMillisecs(DummyFunc, 1., 2., 3., 4., 5., 6.f, 2.);
+      auto [result, timeMs] = util::ProfileInvoke<std::chrono::milliseconds>(
+         DummyFunc, 1., 2., 3., 4., 5., 6.f, 2.);
       EXPECT_FLOAT_EQ(result, DummyFunc(1., 2., 3., 4., 5., 6.f, 2.));
    }
 
@@ -135,14 +168,15 @@ TEST_F(FunctionProfilingTest, ArbitraryInputsAccepted) {
          return (static_cast<usize>(a) * static_cast<usize>(b))
                 + static_cast<usize>(c) + v.size();
       };
-      auto [result, timeMs] = utils::ProfileInMicrosecs(
+      auto [result, timeMs] = util::ProfileInvoke<std::chrono::milliseconds>(
          DummyFunc, 1, std::vector{2.0f, 42.0f}, 3.0f, 5.0);
       EXPECT_EQ(result, DummyFunc(1, {2.0f, 42.0f}, 3.0f, 5.0));
    }
 
    {
-      auto DummyFunc        = []() { return 5; };
-      auto [result, timeMs] = utils::ProfileInMillisecs(DummyFunc);
+      auto DummyFunc = []() { return 5; };
+      auto [result, timeMs] =
+         util::ProfileInvoke<std::chrono::milliseconds>(DummyFunc);
       EXPECT_EQ(result, DummyFunc());
    }
 }
@@ -159,8 +193,8 @@ TEST_F(FunctionProfilingTest, CorrectTimeReturned) {
       mRunsTimings.clear();
       for(usize runIdx = 1; runIdx <= nRuns; ++runIdx) {
          SCOPED_TRACE(runIdx);
-         auto timeUs =
-            utils::ProfileInMicrosecs(SleepFunc, baseSleepTimeMs * runIdx);
+         auto timeUs = util::ProfileInvoke<std::chrono::microseconds>(
+            SleepFunc, baseSleepTimeMs * runIdx);
          EXPECT_GE(timeUs, 1000 * baseSleepTimeMs * runIdx);
          mRunsTimings.push_back(static_cast<f32>(timeUs)
                                 / static_cast<f32>(runIdx));

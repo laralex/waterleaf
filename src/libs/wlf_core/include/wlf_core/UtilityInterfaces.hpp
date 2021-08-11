@@ -2,7 +2,7 @@
 
 #include "Defines.hpp"
 
-namespace wlf::utils {
+namespace wlf::util {
 
 class ENGINE_API INonCopyable {
 public:

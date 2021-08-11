@@ -13,7 +13,7 @@
 #include <vector>
 
 
-namespace wlf::utils {
+namespace wlf::util {
 
 class ENGINE_API MultiStopwatch;
 
@@ -141,4 +141,4 @@ private:
    MultiStopwatch m_MultiStopwatch;
 };
 
-} // namespace wlf::utils
+} // namespace wlf::util

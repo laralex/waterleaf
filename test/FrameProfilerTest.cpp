@@ -7,7 +7,7 @@
 
 
 using namespace wlf;
-using namespace wlf::utils;
+using namespace wlf::util;
 
 class FrameProfilerTest : public ::testing::Test {
 protected:
