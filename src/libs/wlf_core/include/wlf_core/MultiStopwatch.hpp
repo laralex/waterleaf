@@ -47,14 +47,14 @@ public:
    bool IsKeyValid(const usize key) const noexcept;
    std::optional<std::string_view> NameOf(const usize key) const noexcept;
 
-   std::optional<hires_timepoint> BeginningOf(const usize key) const noexcept;
+   std::optional<detail::hires_timepoint> BeginningOf(const usize key) const noexcept;
 
    bool SetBeginningOf(
       const usize key,
-      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
 
    void SetBeginningOfAll(
-      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
 
    bool StoreElapsedOf(const usize key,
                       const bool resetBeginning = false) noexcept;
@@ -67,7 +67,7 @@ public:
    bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> GetElapsedOf(const usize key) const noexcept;
+   std::optional<detail::hires_duration> GetElapsedOf(const usize key) const noexcept;
    std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
    std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
 
@@ -98,14 +98,14 @@ public:
    bool IsKeyValid(const usize key) const noexcept;
    std::optional<std::string_view> NameOf(const usize key) const noexcept;
 
-   std::optional<hires_timepoint> BeginningOf(const usize key) const noexcept;
+   std::optional<detail::hires_timepoint> BeginningOf(const usize key) const noexcept;
 
    bool SetBeginningOf(
       const usize key,
-      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
 
    void SetBeginningOfAll(
-      const hires_timepoint timepointInPast = hires_clock::now()) noexcept;
+      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
 
    bool StoreElapsedOf(const usize key,
                       const bool resetBeginning = false) noexcept;
@@ -118,7 +118,7 @@ public:
    bool ClearElapsedOf(const usize key) noexcept;
    void ClearElapsedOfAll() noexcept;
 
-   std::optional<hires_duration> GetElapsedOf(const usize key) const noexcept;
+   std::optional<detail::hires_duration> GetElapsedOf(const usize key) const noexcept;
    std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
    std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
 

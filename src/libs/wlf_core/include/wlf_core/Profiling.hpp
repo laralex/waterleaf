@@ -43,9 +43,9 @@ namespace wlf::util {
 template<typename DurationT, typename F, typename... Args>
 auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
    detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
-   const auto begin = hires_clock::now();
+   const auto begin = detail::hires_clock::now();
    detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
-   const auto end = hires_clock::now();
+   const auto end = detail::hires_clock::now();
    return std::chrono::duration_cast<DurationT>(end - begin).count();
 }
 
@@ -70,10 +70,10 @@ template<typename DurationT,
          int = 0>
 auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
    detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
-   const auto begin = hires_clock::now();
+   const auto begin = detail::hires_clock::now();
    auto&& functionOutput =
       detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
-   const auto end = hires_clock::now();
+   const auto end = detail::hires_clock::now();
    return std::make_pair(
       std::move(functionOutput),
       std::chrono::duration_cast<DurationT>(end - begin).count());

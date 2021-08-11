@@ -1,8 +1,9 @@
 #include "wlf_core/Prelude.hpp"
-#include "gtest/gtest.h"
 
+#include "gtest/gtest.h"
 #include <chrono>
 #include <thread>
+
 
 
 using namespace wlf;
@@ -26,7 +27,7 @@ public:
       m_Stopwatch->StoreElapsed();
    }
 
-   void MeasureFromTimepointTillNow(hires_timepoint timepoint) {
+   void MeasureFromTimepointTillNow(util::detail::hires_timepoint timepoint) {
       m_Stopwatch->SetBeginning(timepoint);
       m_Stopwatch->StoreElapsed();
    }

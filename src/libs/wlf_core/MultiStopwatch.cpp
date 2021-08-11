@@ -2,6 +2,7 @@
 
 using namespace wlf;
 using namespace wlf::util;
+using namespace wlf::util::detail;
 
 using duration_milli = std::chrono::duration<wlf::u64, std::milli>;
 using duration_micro = std::chrono::duration<wlf::u64, std::micro>;
