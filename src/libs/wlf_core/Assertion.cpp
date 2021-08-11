@@ -9,16 +9,17 @@ using namespace wlf;
 
 namespace {
 
-constexpr auto operator&(const detail::AssertionLevel lhs,
-                         const detail::AssertionLevel rhs) -> bool {
+constexpr auto IsFlagSet(const detail::AssertionLevel lhs,
+                         const detail::AssertionLevel rhs) noexcept -> bool {
    return static_cast<size_t>(lhs) & static_cast<size_t>(rhs);
 }
 
-constexpr void AbortIfNotOk(const bool isOk, const std::string_view message) {
+constexpr void AbortIfNotOk(const bool isOk,
+                            const std::string_view message) noexcept {
    if(!isOk) {
       spdlog::critical("Assertion failed: {}", message);
       // TODO(laralex): fancier termination (error window, etc)
-      exit(1);
+      std::terminate();
    }
 }
 
@@ -26,16 +27,16 @@ constexpr void AbortIfNotOk(const bool isOk, const std::string_view message) {
 
 /* Assertion utilities */
 
-void wlf::Assert(const bool isOk, const std::string_view message) noexcept {
+void wlf::AssertRelease(const bool isOk,
+                        const std::string_view message) noexcept {
    constexpr bool chosen =
-      (detail::EnabledAssertions & detail::AssertionLevel::RunTime);
+      IsFlagSet(detail::EnabledAssertions, detail::AssertionLevel::RunTime);
    if constexpr(!wlf::NoAsserts && chosen) { AbortIfNotOk(isOk, message); }
 }
 
-void wlf::AssertDebug(const bool isOk,
-                      const std::string_view message) noexcept {
-   constexpr bool chosen =
-      (detail::EnabledAssertions & detail::AssertionLevel::DebugRunTime);
+void wlf::Assert(const bool isOk, const std::string_view message) noexcept {
+   constexpr bool chosen = IsFlagSet(detail::EnabledAssertions,
+                                     detail::AssertionLevel::DebugRunTime);
    if constexpr(!wlf::NoAsserts && wlf::IsDebugBuild && chosen) {
       AbortIfNotOk(isOk, message);
    }

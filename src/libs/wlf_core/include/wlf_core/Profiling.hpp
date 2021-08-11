@@ -1,5 +1,6 @@
 #pragma once
 #include "Defines.hpp"
+#include "Invoke.hpp"
 #include "MultiStopwatch.hpp"
 #include "Stopwatch.hpp"
 #include "UtilityDefines.hpp"
@@ -12,39 +13,13 @@
 #include <string>
 #include <vector>
 
-
-
-namespace wlf::util::detail {
-
-template<
-   typename F,
-   typename... Args,
-   typename = std::enable_if_t<!std::is_member_pointer_v<std::decay_t<F>>>>
-auto Invoke(F&& function, Args&&... args) noexcept(
-   noexcept(std::forward<F>(function)(std::forward<Args>(args)...)))
-   -> decltype(std::forward<F>(function)(std::forward<Args>(args)...)) {
-   return std::forward<F>(function)(std::forward<Args>(args)...);
-}
-
-template<typename F,
-         typename... Args,
-         typename = std::enable_if_t<std::is_member_pointer_v<std::decay_t<F>>>,
-         int      = 0>
-auto Invoke(F&& function, Args&&... args) noexcept(
-   noexcept(std::mem_fn(function)(std::forward<Args>(args)...)))
-   -> decltype(std::mem_fn(function)(std::forward<Args>(args)...)) {
-   return std::mem_fn(function)(std::forward<Args>(args)...);
-}
-
-} // namespace wlf::util::detail
-
 namespace wlf::util {
 
 template<typename DurationT, typename F, typename... Args>
 auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
-   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
+   std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    const auto begin = detail::hires_clock::now();
-   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
+   std::invoke(std::forward<F>(function), std::forward<Args>(args)...);
    const auto end = detail::hires_clock::now();
    return std::chrono::duration_cast<DurationT>(end - begin).count();
 }
@@ -69,10 +44,10 @@ template<typename DurationT,
             std::enable_if_t<!std::is_void_v<std::invoke_result_t<F, Args...>>>,
          int = 0>
 auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
-   detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
+   std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    const auto begin = detail::hires_clock::now();
    auto&& functionOutput =
-      detail::Invoke(std::forward<F>(function), std::forward<Args>(args)...);
+      std::invoke(std::forward<F>(function), std::forward<Args>(args)...);
    const auto end = detail::hires_clock::now();
    return std::make_pair(
       std::move(functionOutput),

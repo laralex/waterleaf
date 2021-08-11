@@ -51,16 +51,17 @@ function(make_test name link_against group_variable)
 endfunction()
 
 # make_test(critical_tests "wlf_render" WLF_CRITICAL_TESTS "")
-make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS 
+make_test(time_consuming_tests "wlf_render" WLF_TIME_CONSUMING_TESTS
    FunctionProfilingTest.cpp
-   StopwatchTest.cpp
+   StopwatchTest.cpp)
+
+make_test(aux_tests "wlf_render" WLF_AUX_TESTS
+   InvokeTest.cpp
    RecordingStopwatchTest.cpp
    MultiStopwatchTest.cpp
    RecordingMultiStopwatchTest.cpp)
 
-make_test(dev_test "wlf_render" "" RecordingMultiStopwatchTest.cpp)
-
-#make_test(aux_tests "wlf_render" WLF_AUX_TESTS)
+make_test(dev_test "wlf_render" "" InvokeTest.cpp)
 
 make_test(all_tests "wlf_render" ""
    ${WLF_CRITICAL_TESTS}

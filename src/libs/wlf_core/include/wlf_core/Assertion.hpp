@@ -55,12 +55,12 @@ inline constexpr bool NoAsserts = (detail::EnabledAssertions == detail::Assertio
  * If library is configured to check runtime assertions, this assertion
  * will be compiled in any build type (Debug/Release) */
 ENGINE_API
-void Assert(const bool isOk, const std::string_view message) noexcept;
+void AssertRelease(const bool isOk, const std::string_view message) noexcept;
 
 /* wlf::Assert
  * If library is configured to check debug runtime assertions, this assertion
  * will be compiled in Debug build type, and will be a noop in Release */
 ENGINE_API
-void AssertDebug(const bool isOk, const std::string_view message) noexcept;
+void Assert(const bool isOk, const std::string_view message) noexcept;
 
 } // namespace wlf
