@@ -24,6 +24,7 @@ auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
    return std::chrono::duration_cast<DurationT>(end - begin).count();
 }
 
+// if 'function' returns void, return just timing
 template<typename DurationT,
          typename F,
          typename... Args,
@@ -36,7 +37,7 @@ auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
                                                 std::forward<Args>(args)...);
 }
 
-// if there's something to return - return a pair of result and time
+// if there's something to return - return a pair of result and timing
 template<typename DurationT,
          typename F,
          typename... Args,
@@ -63,22 +64,24 @@ public:
          , m_ProfilePartsMultiStopwatch(nFramesBuffered, std::move(stopwatches))
          , m_FrameTimeStopwatch(nFramesBuffered, Stopwatch{}) {}
 
-   wlf::usize StopwatchesNumber() const noexcept;
-   wlf::usize BufferedFramesNumber() const noexcept;
-   bool IsKeyValid(const usize key) const noexcept;
-   bool IsFrameDataAccessible(const usize numFramesBack) const noexcept;
+   auto StopwatchesNumber() const noexcept -> wlf::usize;
+   auto BufferedFramesNumber() const noexcept -> wlf::usize;
+   auto IsKeyValid(const usize key) const noexcept -> bool;
+   auto IsFrameDataAccessible(const usize numFramesBack) const noexcept -> bool;
 
-   void StartNewFrame() noexcept;
-   bool BeginMeasureOf(const usize key) noexcept;
-   bool EndMeasureOf(const usize key) noexcept;
+   auto StartNewFrame() noexcept -> void;
+   auto BeginMeasureOf(const usize key) noexcept -> bool;
+   auto EndMeasureOf(const usize key) noexcept -> bool;
 
-   std::optional<wlf::u64>
-   CurrentCumulativeTimingOf(const usize key) const noexcept;
-   std::optional<wlf::u64>
-   HistoricalTimingOf(const usize key,
-                      const usize numFramesBack) const noexcept;
-   std::optional<wlf::u64>
-   HistoricalFrametime(const usize numFramesBack = 1) const noexcept;
+
+   auto CurrentCumulativeTimingOf(const usize key) const noexcept
+      -> std::optional<wlf::u64>;
+
+   auto HistoricalTimingOf(const usize key,
+                           const usize numFramesBack) const noexcept
+      -> std::optional<wlf::u64>;
+   auto HistoricalFrametime(const usize numFramesBack = 1) const noexcept
+      -> std::optional<wlf::u64>;
 
 private:
    usize m_NumFramesBuffered;

@@ -22,8 +22,8 @@ enum class AssertionLevel : size_t {
    DebugRunTime = 1 << 3,
 };
 
-constexpr AssertionLevel operator|(const AssertionLevel lhs,
-                                   const AssertionLevel rhs) {
+auto constexpr operator|(const AssertionLevel lhs, const AssertionLevel rhs)
+   -> AssertionLevel {
    return static_cast<AssertionLevel>(static_cast<size_t>(lhs)
                                       | static_cast<size_t>(rhs));
 }
@@ -40,7 +40,7 @@ inline constexpr AssertionLevel EnabledAssertions =
    | AssertionLevel::DebugRunTime
 #endif
    ; // EnabledAssertions
-} // namespace
+} // namespace wlf::detail
 
 namespace wlf {
 
@@ -49,7 +49,8 @@ namespace wlf {
  * NOTE: use it to suppress `static_assert` like so
  * `static_assert(ok || wlf::NoAsserts)` */
 ENGINE_API
-inline constexpr bool NoAsserts = (detail::EnabledAssertions == detail::AssertionLevel::None);
+inline constexpr bool NoAsserts =
+   (detail::EnabledAssertions == detail::AssertionLevel::None);
 
 /* wlf::Assert
  * If library is configured to check runtime assertions, this assertion

@@ -7,10 +7,10 @@
 
 namespace wlf::render {
 
-constexpr float ExampleSin(const float x) {
+auto constexpr ExampleSin(const float x) -> float {
    auto s = std::string_view{"Whatever"};
    for(int i = 0; i < 10000; ++i) {
-      i = (int)((float)i*0.0f) + i;
+      i = (int)((float)i * 0.0f) + i;
    }
    return glm::sin(x) + ((float)s.length() * 0.0f);
 }

@@ -7,11 +7,12 @@ namespace wlf::util {
 class ENGINE_API INonCopyable {
 public:
    INonCopyable(const INonCopyable&) = delete;
-   INonCopyable& operator=(const INonCopyable&) = delete;
+   auto operator=(const INonCopyable&) -> INonCopyable& = delete;
 
    INonCopyable(INonCopyable&&) = default;
-   INonCopyable& operator=(INonCopyable&&) = default;
-   ~INonCopyable() = default;
+   auto operator=(INonCopyable&&) -> INonCopyable& = default;
+   ~INonCopyable()                                 = default;
+
 protected:
    INonCopyable() = default;
 };
@@ -20,12 +21,13 @@ class ENGINE_API INonAssignable {
 public:
    INonAssignable& operator=(const INonAssignable&) = delete;
    INonAssignable& operator=(INonAssignable&&) = delete;
-   
+
    INonAssignable(const INonAssignable&) = default;
-   INonAssignable(INonAssignable&&) = default;
-   ~INonAssignable() = default;
+   INonAssignable(INonAssignable&&)      = default;
+   ~INonAssignable()                     = default;
+
 protected:
    INonAssignable() = default;
 };
 
-}
+} // namespace wlf::util

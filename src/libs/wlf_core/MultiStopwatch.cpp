@@ -8,7 +8,7 @@ using duration_milli = std::chrono::duration<wlf::u64, std::milli>;
 using duration_micro = std::chrono::duration<wlf::u64, std::micro>;
 
 
-bool MultiStopwatchBuilder::IsComplete() const noexcept {
+auto MultiStopwatchBuilder::IsComplete() const noexcept -> bool {
    return m_LeftToInitialize == 0;
 }
 
@@ -58,13 +58,15 @@ bool MultiStopwatch::SetBeginningOf(const usize key,
    return true;
 }
 
-void MultiStopwatch::SetBeginningOfAll(const hires_timepoint timePoint) noexcept {
+void MultiStopwatch::SetBeginningOfAll(
+   const hires_timepoint timePoint) noexcept {
    for(auto& stopwatch : m_Stopwatches) {
       stopwatch.SetBeginning(timePoint);
    }
 }
 
-bool MultiStopwatch::StoreElapsedOf(const usize key, const bool resetBeginning) noexcept {
+bool MultiStopwatch::StoreElapsedOf(const usize key,
+                                    const bool resetBeginning) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].StoreElapsed(resetBeginning);
@@ -77,7 +79,8 @@ void MultiStopwatch::StoreElapsedOfAll(const bool resetBeginning) noexcept {
    }
 }
 
-bool MultiStopwatch::AddStoreElapsedOf(const usize key, const bool resetBeginning) noexcept {
+bool MultiStopwatch::AddStoreElapsedOf(const usize key,
+                                       const bool resetBeginning) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].AddStoreElapsed(resetBeginning);
@@ -158,16 +161,19 @@ void RecordingMultiStopwatch::SetBeginningOfAll(
    return m_MultiStopwatch.SetBeginningOfAll(timepointInPast);
 }
 
-bool RecordingMultiStopwatch::StoreElapsedOf(const usize key,
-                                            const bool resetBeginning) noexcept {
+bool RecordingMultiStopwatch::StoreElapsedOf(
+   const usize key,
+   const bool resetBeginning) noexcept {
    return m_MultiStopwatch.StoreElapsedOf(key, resetBeginning);
 }
-void RecordingMultiStopwatch::StoreElapsedOfAll(const bool resetBeginning) noexcept {
+void RecordingMultiStopwatch::StoreElapsedOfAll(
+   const bool resetBeginning) noexcept {
    return m_MultiStopwatch.StoreElapsedOfAll(resetBeginning);
 }
 
-bool RecordingMultiStopwatch::AddStoreElapsedOf(const usize key,
-                                               const bool resetBeginning) noexcept {
+bool RecordingMultiStopwatch::AddStoreElapsedOf(
+   const usize key,
+   const bool resetBeginning) noexcept {
    return m_MultiStopwatch.AddStoreElapsedOf(key, resetBeginning);
 }
 void RecordingMultiStopwatch::AddStoreElapsedOfAll(
@@ -176,7 +182,7 @@ void RecordingMultiStopwatch::AddStoreElapsedOfAll(
 }
 
 bool RecordingMultiStopwatch::ClearElapsedOf(const usize key) noexcept {
-    return m_MultiStopwatch.ClearElapsedOf(key);
+   return m_MultiStopwatch.ClearElapsedOf(key);
 }
 void RecordingMultiStopwatch::ClearElapsedOfAll() noexcept {
    return m_MultiStopwatch.ClearElapsedOfAll();
@@ -218,9 +224,9 @@ bool RecordingMultiStopwatch::IsRecordAvailable(
    return recordOffset < m_RecordsCapacity && recordOffset < m_RecordsEverSaved;
 }
 
-std::optional<wlf::u64>
-RecordingMultiStopwatch::RecordedElapsedUsOf(const usize key,
-                                             const usize stateOffset) const noexcept {
+std::optional<wlf::u64> RecordingMultiStopwatch::RecordedElapsedUsOf(
+   const usize key,
+   const usize stateOffset) const noexcept {
    if(!m_MultiStopwatch.IsKeyValid(key) || !IsRecordAvailable(stateOffset)) {
       return std::nullopt;
    }

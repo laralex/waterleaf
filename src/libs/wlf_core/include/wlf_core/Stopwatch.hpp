@@ -18,19 +18,19 @@ public:
 
    explicit Stopwatch(const Stopwatch&) = default;
    explicit Stopwatch(Stopwatch&&)      = default;
-   Stopwatch& operator=(Stopwatch&&) = default;
-   Stopwatch& operator=(const Stopwatch&) = default;
+   auto operator=(Stopwatch&&) -> Stopwatch& = default;
+   auto operator=(const Stopwatch&) -> Stopwatch& = default;
 
-   detail::hires_timepoint Beginning() const noexcept;
-   void SetBeginning(
-      const detail::hires_timepoint pastTimepoint = detail::hires_clock::now()) noexcept;
+   auto Beginning() const noexcept -> detail::hires_timepoint;
+   auto SetBeginning(const detail::hires_timepoint pastTimepoint =
+                        detail::hires_clock::now()) noexcept -> void;
 
-   void StoreElapsed(const bool resetBeginning = false) noexcept;
-   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
-   void ClearElapsed() noexcept;
-   detail::hires_duration GetElapsed() const noexcept;
-   wlf::u64 GetElapsedUs() const noexcept;
-   wlf::u64 GetElapsedMs() const noexcept;
+   auto StoreElapsed(const bool resetBeginning = false) noexcept -> void;
+   auto AddStoreElapsed(const bool resetBeginning = false) noexcept -> void;
+   auto ClearElapsed() noexcept -> void;
+   auto GetElapsed() const noexcept -> detail::hires_duration;
+   auto GetElapsedUs() const noexcept -> wlf::u64;
+   auto GetElapsedMs() const noexcept -> wlf::u64;
 
 private:
    detail::hires_timepoint m_BeginningTimePoint;
@@ -48,28 +48,28 @@ public:
    }
 
    explicit RecordingStopwatch(RecordingStopwatch&&) = default;
-   RecordingStopwatch& operator=(RecordingStopwatch&&) = default;
+   auto operator=(RecordingStopwatch&&) -> RecordingStopwatch& = default;
 
    // Stopwatch delegates
-   detail::hires_timepoint Beginning() const noexcept;
-   void SetBeginning(
-      const detail::hires_timepoint pastTimepoint = detail::hires_clock::now()) noexcept;
+   auto Beginning() const noexcept -> detail::hires_timepoint;
+   auto SetBeginning(const detail::hires_timepoint pastTimepoint =
+                        detail::hires_clock::now()) noexcept -> void;
 
-   void StoreElapsed(const bool resetBeginning = false) noexcept;
-   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
-   void ClearElapsed() noexcept;
-   detail::hires_duration GetElapsed() const noexcept;
-   wlf::u64 GetElapsedUs() const noexcept;
-   wlf::u64 GetElapsedMs() const noexcept;
+   auto StoreElapsed(const bool resetBeginning = false) noexcept -> void;
+   auto AddStoreElapsed(const bool resetBeginning = false) noexcept -> void;
+   auto ClearElapsed() noexcept -> void;
+   auto GetElapsed() const noexcept -> detail::hires_duration;
+   auto GetElapsedUs() const noexcept -> wlf::u64;
+   auto GetElapsedMs() const noexcept -> wlf::u64;
 
    // Extended functionality
-   void RecordState() noexcept;
-   void ClearRecords() noexcept;
+   auto RecordState() noexcept -> void;
+   auto ClearRecords() noexcept -> void;
 
-   usize RecordsCapacity() const noexcept;
-   bool IsRecordAvailable(const usize recordingOffset) const noexcept;
-   std::optional<wlf::u64>
-   RecordedElapsedUs(const usize recordingOffset) const noexcept;
+   auto RecordsCapacity() const noexcept -> usize;
+   auto IsRecordAvailable(const usize recordingOffset) const noexcept -> bool;
+   auto RecordedElapsedUs(const usize recordingOffset) const noexcept
+      -> std::optional<wlf::u64>;
 
 private:
    Stopwatch m_Stopwatch;

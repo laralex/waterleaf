@@ -183,7 +183,7 @@ TYPED_TEST(MultiStopwatchTest, SetBeginningOfAll) {
 }
 
 TYPED_TEST(MultiStopwatchTest, StoreElapsedOfAll) {
-   u64 nRepeats = 5, baseOffsetMs = 10, allowedNoiseUs = 150;
+   u64 nRepeats = 5, baseOffsetMs = 10, allowedNoiseUs = 5000;
 
    Stopwatch prototype;
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {

@@ -23,9 +23,9 @@ public:
          : m_Stopwatches(nStopwatches)
          , m_Names(nStopwatches)
          , m_LeftToInitialize(nStopwatches) {}
-   bool IsComplete() const noexcept;
-   MultiStopwatchBuilder
-   WithStopwatchName(const usize key, std::string&& displayedName) noexcept;
+   auto IsComplete() const noexcept -> bool;
+   auto WithStopwatchName(const usize key, std::string&& displayedName) noexcept
+      -> MultiStopwatchBuilder;
 
 private:
    friend MultiStopwatch;
@@ -40,36 +40,42 @@ public:
    explicit MultiStopwatch(MultiStopwatch&&) = default;
    MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
-   static std::optional<MultiStopwatch>
-   FromBuilder(MultiStopwatchBuilder&&) noexcept;
+   auto static FromBuilder(MultiStopwatchBuilder&&) noexcept
+      -> std::optional<MultiStopwatch>;
 
-   usize StopwatchesNumber() const noexcept;
-   bool IsKeyValid(const usize key) const noexcept;
-   std::optional<std::string_view> NameOf(const usize key) const noexcept;
+   auto StopwatchesNumber() const noexcept -> usize;
+   auto IsKeyValid(const usize key) const noexcept -> bool;
+   auto NameOf(const usize key) const noexcept
+      -> std::optional<std::string_view>;
 
-   std::optional<detail::hires_timepoint> BeginningOf(const usize key) const noexcept;
+   auto BeginningOf(const usize key) const noexcept
+      -> std::optional<detail::hires_timepoint>;
 
-   bool SetBeginningOf(
-      const usize key,
-      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
+   auto SetBeginningOf(const usize key,
+                       const detail::hires_timepoint timepointInPast =
+                          detail::hires_clock::now()) noexcept -> bool;
 
-   void SetBeginningOfAll(
-      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
+   auto SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
+                             detail::hires_clock::now()) noexcept -> void;
 
-   bool StoreElapsedOf(const usize key,
-                      const bool resetBeginning = false) noexcept;
-   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
+   auto StoreElapsedOf(const usize key,
+                       const bool resetBeginning = false) noexcept -> bool;
+   auto StoreElapsedOfAll(const bool resetBeginning = false) noexcept -> void;
 
-   bool AddStoreElapsedOf(const usize key,
-                         const bool resetBeginning = false) noexcept;
-   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
+   auto AddStoreElapsedOf(const usize key,
+                          const bool resetBeginning = false) noexcept -> bool;
+   auto AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept
+      -> void;
 
-   bool ClearElapsedOf(const usize key) noexcept;
-   void ClearElapsedOfAll() noexcept;
+   auto ClearElapsedOf(const usize key) noexcept -> bool;
+   auto ClearElapsedOfAll() noexcept -> void;
 
-   std::optional<detail::hires_duration> GetElapsedOf(const usize key) const noexcept;
-   std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
-   std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
+   auto GetElapsedOf(const usize key) const noexcept
+      -> std::optional<detail::hires_duration>;
+   auto GetElapsedUsOf(const usize key) const noexcept
+      -> std::optional<wlf::u64>;
+   auto GetElapsedMsOf(const usize key) const noexcept
+      -> std::optional<wlf::u64>;
 
 private:
    explicit MultiStopwatch(MultiStopwatchBuilder&& builder) noexcept
@@ -91,47 +97,55 @@ public:
    }
 
    // MultiStopwatch delegates
-   static std::optional<RecordingMultiStopwatch>
-   FromBuilder(const usize recordsCapacity, MultiStopwatchBuilder&&) noexcept;
+   auto static FromBuilder(const usize recordsCapacity,
+                           MultiStopwatchBuilder&&) noexcept
+      -> std::optional<RecordingMultiStopwatch>;
 
-   usize StopwatchesNumber() const noexcept;
-   bool IsKeyValid(const usize key) const noexcept;
-   std::optional<std::string_view> NameOf(const usize key) const noexcept;
+   auto StopwatchesNumber() const noexcept -> usize;
+   auto IsKeyValid(const usize key) const noexcept -> bool;
+   auto NameOf(const usize key) const noexcept
+      -> std::optional<std::string_view>;
 
-   std::optional<detail::hires_timepoint> BeginningOf(const usize key) const noexcept;
+   auto BeginningOf(const usize key) const noexcept
+      -> std::optional<detail::hires_timepoint>;
 
-   bool SetBeginningOf(
-      const usize key,
-      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
+   auto SetBeginningOf(const usize key,
+                       const detail::hires_timepoint timepointInPast =
+                          detail::hires_clock::now()) noexcept -> bool;
 
-   void SetBeginningOfAll(
-      const detail::hires_timepoint timepointInPast = detail::hires_clock::now()) noexcept;
+   auto SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
+                             detail::hires_clock::now()) noexcept -> void;
 
-   bool StoreElapsedOf(const usize key,
-                      const bool resetBeginning = false) noexcept;
-   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
+   auto StoreElapsedOf(const usize key,
+                       const bool resetBeginning = false) noexcept -> bool;
+   auto StoreElapsedOfAll(const bool resetBeginning = false) noexcept -> void;
 
-   bool AddStoreElapsedOf(const usize key,
-                         const bool resetBeginning = false) noexcept;
-   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
+   auto AddStoreElapsedOf(const usize key,
+                          const bool resetBeginning = false) noexcept -> bool;
+   auto AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept
+      -> void;
 
-   bool ClearElapsedOf(const usize key) noexcept;
-   void ClearElapsedOfAll() noexcept;
+   auto ClearElapsedOf(const usize key) noexcept -> bool;
+   auto ClearElapsedOfAll() noexcept -> void;
 
-   std::optional<detail::hires_duration> GetElapsedOf(const usize key) const noexcept;
-   std::optional<wlf::u64> GetElapsedUsOf(const usize key) const noexcept;
-   std::optional<wlf::u64> GetElapsedMsOf(const usize key) const noexcept;
+   auto GetElapsedOf(const usize key) const noexcept
+      -> std::optional<detail::hires_duration>;
+   auto GetElapsedUsOf(const usize key) const noexcept
+      -> std::optional<wlf::u64>;
+   auto GetElapsedMsOf(const usize key) const noexcept
+      -> std::optional<wlf::u64>;
 
    // Extending functionality
 
-   void RecordState() noexcept;
-   void ClearRecords() noexcept;
+   auto RecordState() noexcept -> void;
+   auto ClearRecords() noexcept -> void;
 
-   usize RecordsCapacity() const noexcept;
-   bool IsRecordAvailable(const usize stateOffset) const noexcept;
+   auto RecordsCapacity() const noexcept -> usize;
+   auto IsRecordAvailable(const usize stateOffset) const noexcept -> bool;
 
-   std::optional<wlf::u64>
-   RecordedElapsedUsOf(const usize key, const usize stateOffset) const noexcept;
+   auto RecordedElapsedUsOf(const usize key,
+                            const usize stateOffset) const noexcept
+      -> std::optional<wlf::u64>;
 
 private:
    usize m_RecordsCapacity  = 0;

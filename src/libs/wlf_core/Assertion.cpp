@@ -9,12 +9,12 @@ using namespace wlf;
 
 namespace {
 
-constexpr auto IsFlagSet(const detail::AssertionLevel lhs,
+auto constexpr IsFlagSet(const detail::AssertionLevel lhs,
                          const detail::AssertionLevel rhs) noexcept -> bool {
    return static_cast<size_t>(lhs) & static_cast<size_t>(rhs);
 }
 
-constexpr void AbortIfNotOk(const bool isOk,
+void constexpr AbortIfNotOk(const bool isOk,
                             const std::string_view message) noexcept {
    if(!isOk) {
       spdlog::critical("Assertion failed: {}", message);
