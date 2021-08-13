@@ -38,7 +38,7 @@ TEST(RecordingStopwatchTest, ReadingRecords) {
          stopwatch.SetBeginning(timePoint);
          stopwatch.StoreElapsed();
          stopwatch.RecordState();
-         manualRecords[recording] = stopwatch.GetElapsedUs();
+         manualRecords[recording] = stopwatch.ElapsedUs();
          EXPECT_NE(manualRecords[recording], 0) << "Test is broken. No timing";
       }
 
@@ -82,7 +82,7 @@ TEST(RecordingStopwatchTest, ClearRecords) {
          auto timePoint = now - offsetMs;
          stopwatch.SetBeginning(timePoint);
          stopwatch.StoreElapsed();
-         EXPECT_NE(stopwatch.GetElapsedUs(), 0)
+         EXPECT_NE(stopwatch.ElapsedUs(), 0)
             << "Test is broken. No timing";
          stopwatch.RecordState();
       }

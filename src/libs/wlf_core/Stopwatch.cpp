@@ -31,15 +31,15 @@ void Stopwatch::ClearElapsed() noexcept {
    m_SavedElapsed = std::chrono::nanoseconds{0};
 }
 
-hires_clock::duration Stopwatch::GetElapsed() const noexcept {
+hires_clock::duration Stopwatch::Elapsed() const noexcept {
    return m_SavedElapsed;
 }
 
-wlf::u64 Stopwatch::GetElapsedUs() const noexcept {
+wlf::u64 Stopwatch::ElapsedUs() const noexcept {
    return std::chrono::duration_cast<duration_micro>(m_SavedElapsed).count();
 }
 
-wlf::u64 Stopwatch::GetElapsedMs() const noexcept {
+wlf::u64 Stopwatch::ElapsedMs() const noexcept {
    return std::chrono::duration_cast<duration_milli>(m_SavedElapsed).count();
 }
 
@@ -62,22 +62,22 @@ void RecordingStopwatch::ClearElapsed() noexcept {
    m_Stopwatch.ClearElapsed();
 }
 
-hires_duration RecordingStopwatch::GetElapsed() const noexcept {
-   return m_Stopwatch.GetElapsed();
+hires_duration RecordingStopwatch::Elapsed() const noexcept {
+   return m_Stopwatch.Elapsed();
 }
 
-wlf::u64 RecordingStopwatch::GetElapsedUs() const noexcept {
-   return m_Stopwatch.GetElapsedUs();
+wlf::u64 RecordingStopwatch::ElapsedUs() const noexcept {
+   return m_Stopwatch.ElapsedUs();
 }
 
-wlf::u64 RecordingStopwatch::GetElapsedMs() const noexcept {
-   return m_Stopwatch.GetElapsedMs();
+wlf::u64 RecordingStopwatch::ElapsedMs() const noexcept {
+   return m_Stopwatch.ElapsedMs();
 }
 
 void RecordingStopwatch::RecordState() noexcept {
    ++m_RecordsIt;
    if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
-   m_Records[m_RecordsIt] = GetElapsedUs();
+   m_Records[m_RecordsIt] = ElapsedUs();
    ++m_RecordsEverSaved;
 }
 

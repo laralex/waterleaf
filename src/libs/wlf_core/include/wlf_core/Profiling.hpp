@@ -16,8 +16,9 @@
 namespace wlf::util {
 
 template<typename DurationT, typename F, typename... Args>
-auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
-   std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
+auto ProfileInvokeDiscardResult
+   [[nodiscard]] (F&& function, Args&&... args) noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    const auto begin = detail::hires_clock::now();
    std::invoke(std::forward<F>(function), std::forward<Args>(args)...);
    const auto end = detail::hires_clock::now();
@@ -25,27 +26,26 @@ auto ProfileInvokeDiscardResult(F&& function, Args&&... args) noexcept(noexcept(
 }
 
 // if 'function' returns void, return just timing
-template<typename DurationT,
-         typename F,
-         typename... Args,
-         typename =
-            std::enable_if_t<std::is_void_v<std::invoke_result_t<F, Args...>>>>
-auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
-   ProfileInvokeDiscardResult<DurationT>(std::forward<F>(function),
-                                         std::forward<Args>(args)...))) {
-   return ProfileInvokeDiscardResult<DurationT>(std::forward<F>(function),
-                                                std::forward<Args>(args)...);
+template<
+   typename DurationT, typename F, typename... Args,
+   typename =
+      std::enable_if_t<std::is_void_v<std::invoke_result_t<F, Args...>>>>
+auto ProfileInvoke [[nodiscard]] (F&& function, Args&&... args) noexcept(
+   noexcept(ProfileInvokeDiscardResult<DurationT>(
+      std::forward<F>(function), std::forward<Args>(args)...))) {
+   return ProfileInvokeDiscardResult<DurationT>(
+      std::forward<F>(function), std::forward<Args>(args)...);
 }
 
 // if there's something to return - return a pair of result and timing
-template<typename DurationT,
-         typename F,
-         typename... Args,
-         typename =
-            std::enable_if_t<!std::is_void_v<std::invoke_result_t<F, Args...>>>,
-         int = 0>
-auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
-   std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
+template<
+   typename DurationT, typename F, typename... Args,
+   typename =
+      std::enable_if_t<!std::is_void_v<std::invoke_result_t<F, Args...>>>,
+   int = 0>
+auto ProfileInvoke
+   [[nodiscard]] (F&& function, Args&&... args) noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    const auto begin = detail::hires_clock::now();
    auto&& functionOutput =
       std::invoke(std::forward<F>(function), std::forward<Args>(args)...);
@@ -57,28 +57,29 @@ auto ProfileInvoke(F&& function, Args&&... args) noexcept(noexcept(
 
 class ENGINE_API FrameProfiler : public INonCopyable {
 public:
-   explicit FrameProfiler(const usize nFramesBuffered,
-                          MultiStopwatch&& stopwatches) noexcept
+   explicit FrameProfiler(
+      const usize nFramesBuffered, MultiStopwatch&& stopwatches) noexcept
          : INonCopyable()
          , m_NumFramesBuffered(nFramesBuffered)
          , m_ProfilePartsMultiStopwatch(nFramesBuffered, std::move(stopwatches))
          , m_FrameTimeStopwatch(nFramesBuffered, Stopwatch{}) {}
 
-   auto StopwatchesNumber() const noexcept -> wlf::usize;
-   auto BufferedFramesNumber() const noexcept -> wlf::usize;
-   auto IsKeyValid(const usize key) const noexcept -> bool;
-   auto IsFrameDataAccessible(const usize numFramesBack) const noexcept -> bool;
+   auto StopwatchesNumber [[nodiscard]] () const noexcept -> wlf::usize;
+   auto BufferedFramesNumber [[nodiscard]] () const noexcept -> wlf::usize;
+   auto IsKeyValid [[nodiscard]] (const usize key) const noexcept -> bool;
+   auto IsFrameDataAccessible
+      [[nodiscard]] (const usize numFramesBack) const noexcept -> bool;
 
    void StartNewFrame() noexcept;
-   auto BeginMeasureOf(const usize key) noexcept -> bool;
-   auto EndMeasureOf(const usize key) noexcept -> bool;
+   auto BeginMeasureOf [[nodiscard]] (const usize key) noexcept -> bool;
+   auto EndMeasureOf [[nodiscard]] (const usize key) noexcept -> bool;
 
 
-   auto CurrentCumulativeTimingOf(const usize key) const noexcept
+   auto CurrentCumulativeTimingOf (const usize key) const noexcept
       -> std::optional<wlf::u64>;
 
-   auto HistoricalTimingOf(const usize key,
-                           const usize numFramesBack) const noexcept
+   auto HistoricalTimingOf
+      (const usize key, const usize numFramesBack) const noexcept
       -> std::optional<wlf::u64>;
    auto HistoricalFrametime(const usize numFramesBack = 1) const noexcept
       -> std::optional<wlf::u64>;

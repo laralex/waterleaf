@@ -50,8 +50,8 @@ protected:
 std::vector<std::string> MultiStopwatchBuilderTest::Names =
    std::vector<std::string>(1000);
 
-std::vector<usize> MultiStopwatchBuilderTest::NumStopwatchesVariants = {1, 16,
-                                                                        256};
+std::vector<usize> MultiStopwatchBuilderTest::NumStopwatchesVariants = {
+   1, 16, 256};
 
 template<typename T>
 std::vector<std::optional<T>> MultiStopwatchTest<T>::StopwatchesVariants =
@@ -68,8 +68,8 @@ TEST_F(MultiStopwatchBuilderTest, BuilderCompleteness) {
          EXPECT_FALSE(builder.IsComplete())
             << "Builder shouldn't be complete while not all stopwatches named."
             << " nStopwatches=" << nStopwatches << " i=" << i;
-         builder.WithStopwatchName(i,
-                                   std::string{this->Names[i % nStopwatches]});
+         builder.WithStopwatchName(
+            i, std::string{this->Names[i % nStopwatches]});
       }
       if(nStopwatches > 1) {
          usize oddIndex = nStopwatches * 2 + 1;
@@ -85,8 +85,8 @@ TEST_F(MultiStopwatchBuilderTest, BuilderCompleteness) {
       EXPECT_TRUE(builder.IsComplete()) << "Builder should be complete";
 
       for(usize i = nStopwatches + 100; i < nStopwatches + 150; ++i) {
-         builder.WithStopwatchName(i,
-                                   std::string{this->Names[i % nStopwatches]});
+         builder.WithStopwatchName(
+            i, std::string{this->Names[i % nStopwatches]});
          EXPECT_TRUE(builder.IsComplete())
             << "Builder should be complete still";
       }
@@ -116,8 +116,8 @@ TEST_F(MultiStopwatchBuilderTest, IncompleteBuilder) {
    for(usize upTo = 0; upTo < nStopwatches - 1; ++upTo) {
       auto builder = MultiStopwatchBuilder{nStopwatches};
       for(usize i = 0; i < upTo; ++i) {
-         builder.WithStopwatchName(i,
-                                   std::string{this->Names[i % nStopwatches]});
+         builder.WithStopwatchName(
+            i, std::string{this->Names[i % nStopwatches]});
       }
       EXPECT_FALSE(builder.IsComplete())
          << "Not all stopwatches are initialized, builder should be incomplete";
@@ -128,8 +128,9 @@ TEST_F(MultiStopwatchBuilderTest, IncompleteBuilder) {
 
 TYPED_TEST(MultiStopwatchTest, StopwatchesNumber) {
    for(usize i = 0; i < this->StopwatchesVariants.size(); ++i) {
-      EXPECT_EQ(this->StopwatchesVariants[i]->StopwatchesNumber(),
-                this->NumStopwatchesVariants[i])
+      EXPECT_EQ(
+         this->StopwatchesVariants[i]->StopwatchesNumber(),
+         this->NumStopwatchesVariants[i])
          << "Stopwatches number should match the builder's stopwatches number";
    }
 }
@@ -174,8 +175,9 @@ TYPED_TEST(MultiStopwatchTest, SetBeginningOfAll) {
          this->StopwatchesVariants[i]->SetBeginningOfAll(timePoint);
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(this->StopwatchesVariants[i]->BeginningOf(key),
-                      prototype.Beginning())
+            EXPECT_EQ(
+               this->StopwatchesVariants[i]->BeginningOf(key),
+               prototype.Beginning())
                << "Beginning of all stopwatches should change";
          }
       }
@@ -199,11 +201,11 @@ TYPED_TEST(MultiStopwatchTest, StoreElapsedOfAll) {
          stopwatch->StoreElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_GE(stopwatch->GetElapsedUsOf(key),
-                      prototype.GetElapsedUs())
+            EXPECT_GE(stopwatch->ElapsedUsOf(key), prototype.ElapsedUs())
                << "Elapsed timing shouldn't be lower than work time";
-            EXPECT_LE(stopwatch->GetElapsedUsOf(key),
-                      prototype.GetElapsedUs() + allowedNoiseUs)
+            EXPECT_LE(
+               stopwatch->ElapsedUsOf(key),
+               prototype.ElapsedUs() + allowedNoiseUs)
                << "Elapsed timing shouldn't be much bigger than work time";
          }
       }
@@ -230,7 +232,7 @@ TYPED_TEST(MultiStopwatchTest, ClearElapsedOfAll) {
          stopwatch->ClearElapsedOfAll();
 
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(stopwatch->GetElapsedOf(key), prototype.GetElapsed())
+            EXPECT_EQ(stopwatch->ElapsedOf(key), prototype.Elapsed())
                << "After clearing the saved elapsed should reset";
          }
       }
@@ -244,6 +246,6 @@ TYPED_TEST(MultiStopwatchTest, SetBeginningOf) {}
 TYPED_TEST(MultiStopwatchTest, StoreElapsedOf) {}
 TYPED_TEST(MultiStopwatchTest, AddStoreElapsedOf) {}
 TYPED_TEST(MultiStopwatchTest, ClearElapsedOf) {}
-TYPED_TEST(MultiStopwatchTest, GetElapsedOf) {}
+TYPED_TEST(MultiStopwatchTest, ElapsedOf) {}
 
 TYPED_TEST(MultiStopwatchTest, StopwatchesIndependence) {}

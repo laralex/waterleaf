@@ -43,9 +43,9 @@ TYPED_TEST(StopwatchTest, RealisticResults) {
    for(u64 i = 1; i <= nRepeats; ++i) {
       u64 sleepMs = i * baseSleepMs;
       this->MeasureDummyWork(sleepMs);
-      EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), sleepMs)
+      EXPECT_GE(this->m_Stopwatch->ElapsedMs(), sleepMs)
          << "Measurement can't be smaller than work time";
-      EXPECT_LE(this->m_Stopwatch->GetElapsedMs(), sleepMs + sleepNoiseMs)
+      EXPECT_LE(this->m_Stopwatch->ElapsedMs(), sleepMs + sleepNoiseMs)
          << "Measurement can't be much bigger than work time";
    }
 }
@@ -58,9 +58,9 @@ TYPED_TEST(StopwatchTest, RealisticResultsBigTimespan) {
                              - std::chrono::hours(hoursInPast);
       u64 expectedElapsedMs = hoursInPast * 60 * 60 * 1000;
       this->MeasureFromTimepointTillNow(timePointInPast);
-      EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), expectedElapsedMs)
+      EXPECT_GE(this->m_Stopwatch->ElapsedMs(), expectedElapsedMs)
          << "Measurement acn't be smaller than work time";
-      EXPECT_LE(this->m_Stopwatch->GetElapsedMs(),
+      EXPECT_LE(this->m_Stopwatch->ElapsedMs(),
                 expectedElapsedMs + sleepNoiseMs)
          << "Measurement can't be much bigger than work time";
    }
@@ -90,7 +90,7 @@ TYPED_TEST(StopwatchTest, SetBeginningInFuture) {
                 std::chrono::high_resolution_clock::now())
          << "Near future: setting beginning should fallback to now()";
       this->m_Stopwatch->StoreElapsed();
-      EXPECT_LE(this->m_Stopwatch->GetElapsedUs(),
+      EXPECT_LE(this->m_Stopwatch->ElapsedUs(),
                 static_cast<u64>(allowedNoiseUs))
          << "Near future: elapsed time should be about 0";
    }
@@ -105,7 +105,7 @@ TYPED_TEST(StopwatchTest, SetBeginningInFuture) {
          << "Far future: setting beginning should fallback to now()"
          << " i = " << i;
       this->m_Stopwatch->StoreElapsed();
-      EXPECT_LE(this->m_Stopwatch->GetElapsedUs(),
+      EXPECT_LE(this->m_Stopwatch->ElapsedUs(),
                 static_cast<u64>(allowedNoiseUs))
          << "Far future: elapsed time should be about 0."
          << " Thus elapsed should be about zero. i = " << i;
@@ -117,9 +117,9 @@ TYPED_TEST(StopwatchTest, ElapsedTimingsIdentical) {
    for(u64 i = 1; i <= nRepeats; ++i) {
       this->MeasureDummyWork(baseSleepMs * i);
 
-      auto elapsed   = this->m_Stopwatch->GetElapsed();
-      auto elapsedMs = this->m_Stopwatch->GetElapsedMs();
-      auto elapsedUs = this->m_Stopwatch->GetElapsedUs();
+      auto elapsed   = this->m_Stopwatch->Elapsed();
+      auto elapsedMs = this->m_Stopwatch->ElapsedMs();
+      auto elapsedUs = this->m_Stopwatch->ElapsedUs();
 
       auto convertedElapsedMs =
          std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
@@ -143,11 +143,11 @@ TYPED_TEST(StopwatchTest, ClearElapsed) {
                        - std::chrono::milliseconds(i * baseOffsetMs);
       this->m_Stopwatch->SetBeginning(timePoint);
       this->m_Stopwatch->StoreElapsed();
-      EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), i * baseOffsetMs)
+      EXPECT_GE(this->m_Stopwatch->ElapsedMs(), i * baseOffsetMs)
          << "StoreElapsed is broken, unrealistic result";
 
       this->m_Stopwatch->ClearElapsed();
-      EXPECT_EQ(this->m_Stopwatch->GetElapsedUs(), 0)
+      EXPECT_EQ(this->m_Stopwatch->ElapsedUs(), 0)
          << "State should be cleared after call";
    }
 }
@@ -167,10 +167,10 @@ TYPED_TEST(StopwatchTest, AddStoreElapsed) {
                            .count();
          this->m_Stopwatch->AddStoreElapsed();
          sumElapsedMs += static_cast<u64>(elapsed);
-         EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), sumElapsedMs)
+         EXPECT_GE(this->m_Stopwatch->ElapsedMs(), sumElapsedMs)
             << "Elapsed time from beginning should accumulate."
             << " i=" << i << " addition=" << addition;
-         EXPECT_LE(this->m_Stopwatch->GetElapsedMs(),
+         EXPECT_LE(this->m_Stopwatch->ElapsedMs(),
                    sumElapsedMs + allowedNoiseMs)
             << "Cumulative elapsed time shouldn't be larger than work."
             << " i=" << i << " addition=" << addition;
@@ -189,7 +189,7 @@ TYPED_TEST(StopwatchTest, StoreElapsedResetBeginning) {
       auto now = std::chrono::high_resolution_clock::now();
       this->m_Stopwatch->StoreElapsed(/*resetBeginning*/ true);
 
-      EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), i * baseOffsetMs)
+      EXPECT_GE(this->m_Stopwatch->ElapsedMs(), i * baseOffsetMs)
          << "Test is broken, StoreElapsed unrealistic result";
 
       EXPECT_GE(this->m_Stopwatch->Beginning(), now)
@@ -213,9 +213,9 @@ TYPED_TEST(StopwatchTest, AddStoreElapsedResetBeginning) {
                              .count();
          this->m_Stopwatch->AddStoreElapsed(/*resetBeginning*/ true);
          sumElapsedMs += static_cast<u64>(elapsedMs);
-         EXPECT_GE(this->m_Stopwatch->GetElapsedMs(), sumElapsedMs)
+         EXPECT_GE(this->m_Stopwatch->ElapsedMs(), sumElapsedMs)
             << "Test is broken, AddStoreElapsed unrealistic result. i=" << i;
-         EXPECT_LE(this->m_Stopwatch->GetElapsedMs(),
+         EXPECT_LE(this->m_Stopwatch->ElapsedMs(),
                    sumElapsedMs + allowedNoiseMs)
             << "Test is broken, AddStoreElapsed unrealistic result i=" << i;
 

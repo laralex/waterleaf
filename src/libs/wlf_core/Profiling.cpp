@@ -39,7 +39,7 @@ bool FrameProfiler::EndMeasureOf(const usize key) noexcept {
 
 std::optional<wlf::u64>
 FrameProfiler::CurrentCumulativeTimingOf(const usize key) const noexcept {
-   return m_ProfilePartsMultiStopwatch.GetElapsedUsOf(key);
+   return m_ProfilePartsMultiStopwatch.ElapsedUsOf(key);
 }
 
 std::optional<wlf::u64>

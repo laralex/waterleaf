@@ -107,20 +107,20 @@ void MultiStopwatch::ClearElapsedOfAll() noexcept {
 }
 
 std::optional<std::chrono::high_resolution_clock::duration>
-MultiStopwatch::GetElapsedOf(const usize key) const noexcept {
+MultiStopwatch::ElapsedOf(const usize key) const noexcept {
    if(!IsKeyValid(key)) return std::nullopt;
-   return std::make_optional(m_Stopwatches[key].GetElapsed());
+   return std::make_optional(m_Stopwatches[key].Elapsed());
 }
 
 std::optional<wlf::u64>
-MultiStopwatch::GetElapsedUsOf(const usize key) const noexcept {
+MultiStopwatch::ElapsedUsOf(const usize key) const noexcept {
    if(!IsKeyValid(key)) return std::nullopt;
-   return std::make_optional(m_Stopwatches[key].GetElapsedUs());
+   return std::make_optional(m_Stopwatches[key].ElapsedUs());
 }
 std::optional<wlf::u64>
-MultiStopwatch::GetElapsedMsOf(const usize key) const noexcept {
+MultiStopwatch::ElapsedMsOf(const usize key) const noexcept {
    if(!IsKeyValid(key)) return std::nullopt;
-   return std::make_optional(m_Stopwatches[key].GetElapsedMs());
+   return std::make_optional(m_Stopwatches[key].ElapsedMs());
 }
 
 std::optional<RecordingMultiStopwatch>
@@ -189,21 +189,21 @@ void RecordingMultiStopwatch::ClearElapsedOfAll() noexcept {
 }
 
 std::optional<hires_duration>
-RecordingMultiStopwatch::GetElapsedOf(const usize key) const noexcept {
-   return m_MultiStopwatch.GetElapsedOf(key);
+RecordingMultiStopwatch::ElapsedOf(const usize key) const noexcept {
+   return m_MultiStopwatch.ElapsedOf(key);
 }
 std::optional<wlf::u64>
-RecordingMultiStopwatch::GetElapsedUsOf(const usize key) const noexcept {
-   return m_MultiStopwatch.GetElapsedUsOf(key);
+RecordingMultiStopwatch::ElapsedUsOf(const usize key) const noexcept {
+   return m_MultiStopwatch.ElapsedUsOf(key);
 }
 std::optional<wlf::u64>
-RecordingMultiStopwatch::GetElapsedMsOf(const usize key) const noexcept {
-   return m_MultiStopwatch.GetElapsedMsOf(key);
+RecordingMultiStopwatch::ElapsedMsOf(const usize key) const noexcept {
+   return m_MultiStopwatch.ElapsedMsOf(key);
 }
 
 void RecordingMultiStopwatch::RecordState() noexcept {
    for(usize key = 0; key < m_MultiStopwatch.StopwatchesNumber(); ++key) {
-      m_Records[m_RecordsIt] = *m_MultiStopwatch.GetElapsedUsOf(key);
+      m_Records[m_RecordsIt] = *m_MultiStopwatch.ElapsedUsOf(key);
       ++m_RecordsIt;
    }
    if(m_RecordsIt == m_Records.size()) { m_RecordsIt = 0; }
@@ -230,7 +230,7 @@ std::optional<wlf::u64> RecordingMultiStopwatch::RecordedElapsedUsOf(
    if(!m_MultiStopwatch.IsKeyValid(key) || !IsRecordAvailable(stateOffset)) {
       return std::nullopt;
    }
-   if(stateOffset == 0) { return m_MultiStopwatch.GetElapsedUsOf(key); }
+   if(stateOffset == 0) { return m_MultiStopwatch.ElapsedUsOf(key); }
 
    auto timingOffset = m_MultiStopwatch.StopwatchesNumber() * stateOffset - key;
    if(m_RecordsIt >= timingOffset) {

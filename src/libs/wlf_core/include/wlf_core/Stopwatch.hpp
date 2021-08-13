@@ -22,16 +22,17 @@ public:
    auto operator=(const Stopwatch&) -> Stopwatch& = default;
 
    auto Beginning() const noexcept -> detail::hires_timepoint;
-   void SetBeginning(const detail::hires_timepoint pastTimepoint =
-                        detail::hires_clock::now()) noexcept;
+   void SetBeginning(
+      const detail::hires_timepoint pastTimepoint =
+         detail::hires_clock::now()) noexcept;
 
    void StoreElapsed(const bool resetBeginning = false) noexcept;
    void AddStoreElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
-   
-   auto GetElapsed() const noexcept -> detail::hires_duration;
-   auto GetElapsedUs() const noexcept -> wlf::u64;
-   auto GetElapsedMs() const noexcept -> wlf::u64;
+
+   auto Elapsed() const noexcept -> detail::hires_duration;
+   auto ElapsedUs() const noexcept -> wlf::u64;
+   auto ElapsedMs() const noexcept -> wlf::u64;
 
 private:
    detail::hires_timepoint m_BeginningTimePoint;
@@ -40,8 +41,8 @@ private:
 
 class ENGINE_API RecordingStopwatch : INonCopyable {
 public:
-   explicit RecordingStopwatch(const usize recordsCapacity,
-                               Stopwatch&& stopwatch) noexcept
+   explicit RecordingStopwatch(
+      const usize recordsCapacity, Stopwatch&& stopwatch) noexcept
          : INonCopyable()
          , m_Stopwatch(std::move(stopwatch))
          , m_Records(recordsCapacity) {
@@ -53,23 +54,25 @@ public:
 
    // Stopwatch delegates
    auto Beginning() const noexcept -> detail::hires_timepoint;
-   void SetBeginning(const detail::hires_timepoint pastTimepoint =
-                        detail::hires_clock::now()) noexcept;
+   void SetBeginning(
+      const detail::hires_timepoint pastTimepoint =
+         detail::hires_clock::now()) noexcept;
 
    void StoreElapsed(const bool resetBeginning = false) noexcept;
    void AddStoreElapsed(const bool resetBeginning = false) noexcept;
    void ClearElapsed() noexcept;
 
-   auto GetElapsed() const noexcept -> detail::hires_duration;
-   auto GetElapsedUs() const noexcept -> wlf::u64;
-   auto GetElapsedMs() const noexcept -> wlf::u64;
+   auto Elapsed() const noexcept -> detail::hires_duration;
+   auto ElapsedUs() const noexcept -> wlf::u64;
+   auto ElapsedMs() const noexcept -> wlf::u64;
 
    // Extended functionality
-   void RecordState() noexcept -> void;
-   void ClearRecords() noexcept -> void;
+   void RecordState() noexcept;
+   void ClearRecords() noexcept;
 
-   auto RecordsCapacity() const noexcept -> usize;
-   auto IsRecordAvailable(const usize recordingOffset) const noexcept -> bool;
+   auto RecordsCapacity [[nodiscard]]() const noexcept -> usize;
+   auto IsRecordAvailable
+      [[nodiscard]] (const usize recordingOffset) const noexcept -> bool;
    auto RecordedElapsedUs(const usize recordingOffset) const noexcept
       -> std::optional<wlf::u64>;
 
