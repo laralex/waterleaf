@@ -1,7 +1,7 @@
 #pragma once
 
+#include "glm/glm.hpp"
 #include <cstdint>
-#include <glm/glm.hpp>
 
 
 #define ENGINE_API __declspec(dllexport)

@@ -14,9 +14,7 @@ enum class InvokeResult { NotExecutedNothingToReturn };
 
 template<typename F, typename... Args>
 auto InvokeInDebug(F&& function, Args&&... args) noexcept(noexcept(
-   std::invoke(std::forward<F>(function), std::forward<Args>(args)...)))
-   -> decltype(std::invoke(std::forward<F>(function),
-                           std::forward<Args>(args)...)) {
+   std::invoke(std::forward<F>(function), std::forward<Args>(args)...))) {
    if constexpr(IsDebugBuild) {
       return std::invoke(std::forward<F>(function),
                          std::forward<Args>(args)...);
