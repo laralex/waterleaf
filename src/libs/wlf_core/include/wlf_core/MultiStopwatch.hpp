@@ -55,20 +55,19 @@ public:
                        const detail::hires_timepoint timepointInPast =
                           detail::hires_clock::now()) noexcept -> bool;
 
-   auto SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
-                             detail::hires_clock::now()) noexcept -> void;
+   void SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
+                             detail::hires_clock::now()) noexcept;
 
    auto StoreElapsedOf(const usize key,
                        const bool resetBeginning = false) noexcept -> bool;
-   auto StoreElapsedOfAll(const bool resetBeginning = false) noexcept -> void;
+   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    auto AddStoreElapsedOf(const usize key,
                           const bool resetBeginning = false) noexcept -> bool;
-   auto AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept
-      -> void;
+   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    auto ClearElapsedOf(const usize key) noexcept -> bool;
-   auto ClearElapsedOfAll() noexcept -> void;
+   void ClearElapsedOfAll() noexcept;
 
    auto GetElapsedOf(const usize key) const noexcept
       -> std::optional<detail::hires_duration>;
@@ -113,20 +112,19 @@ public:
                        const detail::hires_timepoint timepointInPast =
                           detail::hires_clock::now()) noexcept -> bool;
 
-   auto SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
-                             detail::hires_clock::now()) noexcept -> void;
+   void SetBeginningOfAll(const detail::hires_timepoint timepointInPast =
+                             detail::hires_clock::now()) noexcept;
 
    auto StoreElapsedOf(const usize key,
                        const bool resetBeginning = false) noexcept -> bool;
-   auto StoreElapsedOfAll(const bool resetBeginning = false) noexcept -> void;
+   void StoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    auto AddStoreElapsedOf(const usize key,
                           const bool resetBeginning = false) noexcept -> bool;
-   auto AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept
-      -> void;
+   void AddStoreElapsedOfAll(const bool resetBeginning = false) noexcept;
 
    auto ClearElapsedOf(const usize key) noexcept -> bool;
-   auto ClearElapsedOfAll() noexcept -> void;
+   void ClearElapsedOfAll() noexcept;
 
    auto GetElapsedOf(const usize key) const noexcept
       -> std::optional<detail::hires_duration>;
@@ -137,8 +135,8 @@ public:
 
    // Extending functionality
 
-   auto RecordState() noexcept -> void;
-   auto ClearRecords() noexcept -> void;
+   void RecordState() noexcept;
+   void ClearRecords() noexcept;
 
    auto RecordsCapacity() const noexcept -> usize;
    auto IsRecordAvailable(const usize stateOffset) const noexcept -> bool;

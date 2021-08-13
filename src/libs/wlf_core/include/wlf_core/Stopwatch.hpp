@@ -22,12 +22,13 @@ public:
    auto operator=(const Stopwatch&) -> Stopwatch& = default;
 
    auto Beginning() const noexcept -> detail::hires_timepoint;
-   auto SetBeginning(const detail::hires_timepoint pastTimepoint =
-                        detail::hires_clock::now()) noexcept -> void;
+   void SetBeginning(const detail::hires_timepoint pastTimepoint =
+                        detail::hires_clock::now()) noexcept;
 
-   auto StoreElapsed(const bool resetBeginning = false) noexcept -> void;
-   auto AddStoreElapsed(const bool resetBeginning = false) noexcept -> void;
-   auto ClearElapsed() noexcept -> void;
+   void StoreElapsed(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
+   void ClearElapsed() noexcept;
+   
    auto GetElapsed() const noexcept -> detail::hires_duration;
    auto GetElapsedUs() const noexcept -> wlf::u64;
    auto GetElapsedMs() const noexcept -> wlf::u64;
@@ -52,19 +53,20 @@ public:
 
    // Stopwatch delegates
    auto Beginning() const noexcept -> detail::hires_timepoint;
-   auto SetBeginning(const detail::hires_timepoint pastTimepoint =
-                        detail::hires_clock::now()) noexcept -> void;
+   void SetBeginning(const detail::hires_timepoint pastTimepoint =
+                        detail::hires_clock::now()) noexcept;
 
-   auto StoreElapsed(const bool resetBeginning = false) noexcept -> void;
-   auto AddStoreElapsed(const bool resetBeginning = false) noexcept -> void;
-   auto ClearElapsed() noexcept -> void;
+   void StoreElapsed(const bool resetBeginning = false) noexcept;
+   void AddStoreElapsed(const bool resetBeginning = false) noexcept;
+   void ClearElapsed() noexcept;
+
    auto GetElapsed() const noexcept -> detail::hires_duration;
    auto GetElapsedUs() const noexcept -> wlf::u64;
    auto GetElapsedMs() const noexcept -> wlf::u64;
 
    // Extended functionality
-   auto RecordState() noexcept -> void;
-   auto ClearRecords() noexcept -> void;
+   void RecordState() noexcept -> void;
+   void ClearRecords() noexcept -> void;
 
    auto RecordsCapacity() const noexcept -> usize;
    auto IsRecordAvailable(const usize recordingOffset) const noexcept -> bool;

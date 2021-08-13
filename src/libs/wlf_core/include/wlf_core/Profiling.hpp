@@ -69,7 +69,7 @@ public:
    auto IsKeyValid(const usize key) const noexcept -> bool;
    auto IsFrameDataAccessible(const usize numFramesBack) const noexcept -> bool;
 
-   auto StartNewFrame() noexcept -> void;
+   void StartNewFrame() noexcept;
    auto BeginMeasureOf(const usize key) noexcept -> bool;
    auto EndMeasureOf(const usize key) noexcept -> bool;
 
