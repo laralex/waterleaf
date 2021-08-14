@@ -1,6 +1,6 @@
 #include "wlf_core/Invoke.hpp"
 
-#include "wlf_core/Defines.hpp"
+#include "wlf_core/Define.hpp"
 
 #include "gtest/gtest.h"
 

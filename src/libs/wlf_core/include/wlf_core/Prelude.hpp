@@ -3,7 +3,7 @@
 /* Includes all library's interface headers */
 
 #include "Assertion.hpp"
-#include "Defines.hpp"
+#include "Define.hpp"
 #include "Profiling.hpp"
 #include "Stopwatch.hpp"
 #include "MultiStopwatch.hpp"

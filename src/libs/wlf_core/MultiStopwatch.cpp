@@ -3,6 +3,7 @@
 using namespace wlf;
 using namespace wlf::util;
 using namespace wlf::util::detail;
+using namespace wlf::error;
 
 using duration_milli = std::chrono::duration<wlf::u64, std::milli>;
 using duration_micro = std::chrono::duration<wlf::u64, std::micro>;
@@ -12,9 +13,8 @@ auto MultiStopwatchBuilder::IsComplete() const noexcept -> bool {
    return m_LeftToInitialize == 0;
 }
 
-MultiStopwatchBuilder
-MultiStopwatchBuilder::WithStopwatchName(const usize key,
-                                         std::string&& name) noexcept {
+MultiStopwatchBuilder MultiStopwatchBuilder::WithStopwatchName(
+   const usize key, std::string&& name) noexcept {
    // TODO(laralex): signal error
    if(key < m_Stopwatches.size()) {
       if(!m_Names[key]) { --m_LeftToInitialize; }
@@ -24,10 +24,12 @@ MultiStopwatchBuilder::WithStopwatchName(const usize key,
    return *this;
 }
 
-std::optional<MultiStopwatch>
+tl::expected<MultiStopwatch, MultiStopwatchError>
 MultiStopwatch::FromBuilder(MultiStopwatchBuilder&& builder) noexcept {
-   if(!builder.IsComplete()) { return std::nullopt; }
-   return std::make_optional(MultiStopwatch{std::move(builder)});
+   if(!builder.IsComplete()) {
+      return tl::unexpected(MultiStopwatchError::BuilderIsIncomplete);
+   }
+   return {tl::in_place, MultiStopwatch{std::move(builder)}};
 }
 
 usize MultiStopwatch::StopwatchesNumber() const noexcept {
@@ -50,8 +52,8 @@ MultiStopwatch::BeginningOf(const usize key) const noexcept {
    return std::make_optional(m_Stopwatches[key].Beginning());
 }
 
-bool MultiStopwatch::SetBeginningOf(const usize key,
-                                    const hires_timepoint timePoint) noexcept {
+bool MultiStopwatch::SetBeginningOf(
+   const usize key, const hires_timepoint timePoint) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].SetBeginning(timePoint);
@@ -65,8 +67,8 @@ void MultiStopwatch::SetBeginningOfAll(
    }
 }
 
-bool MultiStopwatch::StoreElapsedOf(const usize key,
-                                    const bool resetBeginning) noexcept {
+bool MultiStopwatch::StoreElapsedOf(
+   const usize key, const bool resetBeginning) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].StoreElapsed(resetBeginning);
@@ -79,8 +81,8 @@ void MultiStopwatch::StoreElapsedOfAll(const bool resetBeginning) noexcept {
    }
 }
 
-bool MultiStopwatch::AddStoreElapsedOf(const usize key,
-                                       const bool resetBeginning) noexcept {
+bool MultiStopwatch::AddStoreElapsedOf(
+   const usize key, const bool resetBeginning) noexcept {
    // TODO(laralex): signal error with exception?
    if(!IsKeyValid(key)) return false;
    m_Stopwatches[key].AddStoreElapsed(resetBeginning);
@@ -123,9 +125,8 @@ MultiStopwatch::ElapsedMsOf(const usize key) const noexcept {
    return std::make_optional(m_Stopwatches[key].ElapsedMs());
 }
 
-std::optional<RecordingMultiStopwatch>
-RecordingMultiStopwatch::FromBuilder(const usize recordsCapacity,
-                                     MultiStopwatchBuilder&& builder) noexcept {
+std::optional<RecordingMultiStopwatch> RecordingMultiStopwatch::FromBuilder(
+   const usize recordsCapacity, MultiStopwatchBuilder&& builder) noexcept {
    auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
    if(!multistopwatch) { return std::nullopt; }
    return std::make_optional(RecordingMultiStopwatch{
@@ -151,8 +152,7 @@ RecordingMultiStopwatch::BeginningOf(const usize key) const noexcept {
 }
 
 bool RecordingMultiStopwatch::SetBeginningOf(
-   const usize key,
-   const hires_timepoint timepointInPast) noexcept {
+   const usize key, const hires_timepoint timepointInPast) noexcept {
    return m_MultiStopwatch.SetBeginningOf(key, timepointInPast);
 }
 
@@ -162,8 +162,7 @@ void RecordingMultiStopwatch::SetBeginningOfAll(
 }
 
 bool RecordingMultiStopwatch::StoreElapsedOf(
-   const usize key,
-   const bool resetBeginning) noexcept {
+   const usize key, const bool resetBeginning) noexcept {
    return m_MultiStopwatch.StoreElapsedOf(key, resetBeginning);
 }
 void RecordingMultiStopwatch::StoreElapsedOfAll(
@@ -172,8 +171,7 @@ void RecordingMultiStopwatch::StoreElapsedOfAll(
 }
 
 bool RecordingMultiStopwatch::AddStoreElapsedOf(
-   const usize key,
-   const bool resetBeginning) noexcept {
+   const usize key, const bool resetBeginning) noexcept {
    return m_MultiStopwatch.AddStoreElapsedOf(key, resetBeginning);
 }
 void RecordingMultiStopwatch::AddStoreElapsedOfAll(
@@ -225,8 +223,7 @@ bool RecordingMultiStopwatch::IsRecordAvailable(
 }
 
 std::optional<wlf::u64> RecordingMultiStopwatch::RecordedElapsedUsOf(
-   const usize key,
-   const usize stateOffset) const noexcept {
+   const usize key, const usize stateOffset) const noexcept {
    if(!m_MultiStopwatch.IsKeyValid(key) || !IsRecordAvailable(stateOffset)) {
       return std::nullopt;
    }

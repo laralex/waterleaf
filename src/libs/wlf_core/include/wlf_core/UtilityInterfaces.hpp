@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defines.hpp"
+#include "Define.hpp"
 
 namespace wlf::util {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defines.hpp"
+#include "Define.hpp"
 
 #include <string_view>
 #include <utility>

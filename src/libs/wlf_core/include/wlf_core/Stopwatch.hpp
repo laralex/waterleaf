@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defines.hpp"
+#include "Define.hpp"
 #include "UtilityDefines.hpp"
 #include "UtilityInterfaces.hpp"
 

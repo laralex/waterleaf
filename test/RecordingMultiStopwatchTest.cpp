@@ -1,7 +1,9 @@
+#include "spdlog/spdlog.h"
 #include "wlf_core/Prelude.hpp"
 
 #include "gtest/gtest.h"
 #include <chrono>
+
 
 
 using namespace wlf;
@@ -21,9 +23,14 @@ protected:
          StopwatchesVariants[i] = std::make_optional<RecordingMultiStopwatch>(
             N_RECORDS_CAPACITY, std::move(*innerStopwatch));
          auto builder = ConstructMultiStopwatch(NumStopwatchesVariants[i]);
-
-         PrototypeStopwatchesVariants[i] =
-            MultiStopwatch::FromBuilder(std::move(builder));
+         auto multistopwatch = MultiStopwatch::FromBuilder(std::move(builder));
+         if(multistopwatch) {
+            PrototypeStopwatchesVariants[i] =
+               std::make_optional(std::move(multistopwatch.value()));
+         } else {
+            spdlog::error(wlf::error::DescriptionOf(multistopwatch.error()));
+            continue;
+         }
 
          auto now = std::chrono::high_resolution_clock::now();
          auto timePoint =
@@ -66,16 +73,19 @@ TEST_F(RecordingMultiStopwatchTest, InnerStopwatch) {
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
       for(usize variant = 0; variant < StopwatchesVariants.size(); ++variant) {
          auto nStopwatches = StopwatchesVariants[variant]->StopwatchesNumber();
-         EXPECT_EQ(PrototypeStopwatchesVariants[variant]->StopwatchesNumber(),
-                   nStopwatches)
+         EXPECT_EQ(
+            PrototypeStopwatchesVariants[variant]->StopwatchesNumber(),
+            nStopwatches)
             << "Inner stopwatch should have same number of stopwatches";
          for(usize key = 0; key < nStopwatches; ++key) {
-            EXPECT_EQ(PrototypeStopwatchesVariants[variant]->BeginningOf(key),
-                      StopwatchesVariants[variant]->BeginningOf(key))
+            EXPECT_EQ(
+               PrototypeStopwatchesVariants[variant]->BeginningOf(key),
+               StopwatchesVariants[variant]->BeginningOf(key))
                << "Inner stopwatch should have same beginnings";
 
-            EXPECT_EQ(PrototypeStopwatchesVariants[variant]->NameOf(key),
-                      StopwatchesVariants[variant]->NameOf(key))
+            EXPECT_EQ(
+               PrototypeStopwatchesVariants[variant]->NameOf(key),
+               StopwatchesVariants[variant]->NameOf(key))
                << "Inner stopwatch should have same names";
          }
       }
@@ -110,8 +120,9 @@ TEST_F(RecordingMultiStopwatchTest, ReadingRecords) {
          EXPECT_TRUE(stopwatch.RecordedElapsedUs(recordingOffset))
             << "Record should be accessible. recordingOffset="
             << recordingOffset;
-         EXPECT_EQ(stopwatch.RecordedElapsedUs(recordingOffset),
-                   manualRecords[manualRecords.size() - recordingOffset - 1])
+         EXPECT_EQ(
+            stopwatch.RecordedElapsedUs(recordingOffset),
+            manualRecords[manualRecords.size() - recordingOffset - 1])
             << "Record shoulbe be the same as of saving"
             << " recordingOffset=" << recordingOffset;
       }
@@ -136,14 +147,13 @@ TEST_F(RecordingMultiStopwatchTest, ClearRecords) {
    for(u64 repeat = 0; repeat < nRepeats; ++repeat) {
       auto capacity = stopwatch.RecordsCapacity();
       for(usize recording = 0; recording < capacity; ++recording) {
-         auto now       = std::chrono::high_resolution_clock::now();
-         auto offsetMs  = std::chrono::milliseconds(baseOffsetMs * (repeat + 1)
-                                                   * (recording + 1));
+         auto now      = std::chrono::high_resolution_clock::now();
+         auto offsetMs = std::chrono::milliseconds(
+            baseOffsetMs * (repeat + 1) * (recording + 1));
          auto timePoint = now - offsetMs;
          stopwatch.SetBeginning(timePoint);
          stopwatch.StoreElapsed();
-         EXPECT_NE(stopwatch.ElapsedUs(), 0)
-            << "Test is broken. No timing";
+         EXPECT_NE(stopwatch.ElapsedUs(), 0) << "Test is broken. No timing";
          stopwatch.RecordState();
       }
       for(usize recordingOffset = 0; recordingOffset < nRecordsCapacity;

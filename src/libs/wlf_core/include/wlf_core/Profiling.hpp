@@ -1,5 +1,5 @@
 #pragma once
-#include "Defines.hpp"
+#include "Define.hpp"
 #include "Invoke.hpp"
 #include "MultiStopwatch.hpp"
 #include "Stopwatch.hpp"

@@ -36,7 +36,7 @@ protected:
          builder.WithStopwatchName(i, std::string{Names[i]});
       }
       if constexpr(std::is_same_v<T, MultiStopwatch>) {
-         return T::FromBuilder(std::move(builder));
+         return std::make_optional(T::FromBuilder(std::move(builder)).value());
       } else if constexpr(std::is_same_v<T, RecordingMultiStopwatch>) {
          usize nRecordingsCapacity = 10;
          return T::FromBuilder(nRecordingsCapacity, std::move(builder));

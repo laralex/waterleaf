@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Defines.hpp"
+#include "Define.hpp"
+#include "Error.hpp"
 #include "Stopwatch.hpp"
 #include "UtilityDefines.hpp"
 #include "UtilityInterfaces.hpp"
+#include "tl/expected.hpp"
 
 #include <chrono>
 #include <functional>
@@ -12,6 +14,20 @@
 #include <string>
 #include <vector>
 
+namespace wlf::error {
+enum MultiStopwatchError : usize {
+   KeyIsInvalid,
+   RecordingIsUnavailable,
+   BuilderIsIncomplete
+};
+
+template<>
+const auto error::HumanizedError<
+   MultiStopwatchError>::Descriptions = std::vector<std::string_view>{
+   "Given `key` is invalid, it should be in range [0, StopwatchesNumber()]",
+   "Given `stateOffset` is invalid, it should be [1, RecordsCapacity()]",
+   "Given `builder` is incomplete and can't be used to construct a MultiStopwatch"};
+} // namespace wlf::error
 
 namespace wlf::util {
 
@@ -40,8 +56,8 @@ public:
    explicit MultiStopwatch(MultiStopwatch&&) = default;
    MultiStopwatch& operator=(MultiStopwatch&&) = default;
 
-   auto static FromBuilder(MultiStopwatchBuilder&&) noexcept
-      -> std::optional<MultiStopwatch>;
+   auto static FromBuilder [[nodiscard]] (MultiStopwatchBuilder&&) noexcept
+      -> tl::expected<MultiStopwatch, wlf::error::MultiStopwatchError>;
 
    auto StopwatchesNumber [[nodiscard]] () const noexcept -> usize;
    auto IsKeyValid [[nodiscard]] (const usize key) const noexcept -> bool;
