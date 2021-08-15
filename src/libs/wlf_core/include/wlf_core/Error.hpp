@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Define.hpp"
-#include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/spdlog.h"
 
+#include "spdlog/sinks/stdout_sinks.h"
 #include <optional>
 #include <string_view>
 #include <type_traits>
 #include <vector>
+
 
 
 namespace wlf::error {

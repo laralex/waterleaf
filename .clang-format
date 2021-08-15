@@ -31,7 +31,7 @@ BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BreakStringLiterals: 'false'
 ColumnLimit: '80'
-CommentPragmas: ^ formatter IGNORE
+CommentPragmas: '^ formatter IGNORE'
 CompactNamespaces: 'true'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
 ConstructorInitializerIndentWidth: '6'
@@ -40,7 +40,7 @@ Cpp11BracedListStyle: 'true'
 DerivePointerAlignment: 'true'
 DisableFormat: 'false'
 FixNamespaceComments: 'true'
-IncludeBlocks: Regroup
+IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 IndentPPDirectives: BeforeHash
 IndentWidth: '3'
@@ -48,7 +48,7 @@ IndentWrappedFunctionNames: 'false'
 JavaScriptQuotes: Double
 KeepEmptyLinesAtTheStartOfBlocks: 'true'
 Language: Cpp
-MaxEmptyLinesToKeep: '3'
+MaxEmptyLinesToKeep: '2'
 NamespaceIndentation: None
 PointerAlignment: Left
 ReflowComments: 'true'

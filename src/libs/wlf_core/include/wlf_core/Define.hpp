@@ -8,7 +8,6 @@
 #include <cstdint>
 
 
-
 #define ENGINE_API __declspec(dllexport)
 namespace wlf {
 
