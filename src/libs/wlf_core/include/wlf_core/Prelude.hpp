@@ -4,6 +4,7 @@
 
 #include "Assertion.hpp"
 #include "Define.hpp"
+#include "Error.hpp" // include after Define.hpp
 #include "Profiling.hpp"
 #include "Stopwatch.hpp"
 #include "MultiStopwatch.hpp"

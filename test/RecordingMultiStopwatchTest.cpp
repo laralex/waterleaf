@@ -28,7 +28,7 @@ protected:
             PrototypeStopwatchesVariants[i] =
                std::make_optional(std::move(multistopwatch.value()));
          } else {
-            spdlog::error(wlf::error::DescriptionOf(multistopwatch.error()));
+            wlf::error::LogError(multistopwatch.error());
             continue;
          }
 
